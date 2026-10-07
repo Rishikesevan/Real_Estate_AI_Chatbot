@@ -1,0 +1,125 @@
+/* global.css */
+
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f6f9fc;
+    color: #425466;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6, .heading {
+    color: #0a2540;
+    font-weight: 700;
+}
+
+/* Primary Colors */
+.text-primary { color: #635bff; }
+.bg-primary { background-color: #635bff; }
+.bg-primary:hover { background-color: #5851eb; }
+.border-primary { border-color: #635bff; }
+
+.text-dark { color: #0a2540; }
+.bg-dark { background-color: #0a2540; }
+
+/* Custom components */
+.stripe-btn {
+    background-color: #635bff;
+    color: white;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 0.5rem 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.stripe-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+    background-color: #5851eb;
+}
+
+.stripe-btn-outline {
+    background-color: rgba(99, 91, 255, 0.1);
+    color: #635bff;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 0.5rem 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.stripe-btn-outline:hover {
+    background-color: rgba(99, 91, 255, 0.15);
+}
+
+.stripe-card {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 15px 35px rgba(50, 50, 93, 0.1), 0 5px 15px rgba(0, 0, 0, 0.07);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.stripe-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(50, 50, 93, 0.15), 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Glass Navbar */
+.glass-nav {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* Base Form Input */
+.stripe-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e6ebf1;
+    border-radius: 0.5rem;
+    background-color: white;
+    transition: all 0.2s ease;
+    color: #0a2540;
+    box-shadow: 0 1px 3px rgba(50, 50, 93, 0.05), 0 1px 0 rgba(0, 0, 0, 0.02);
+}
+
+.stripe-input:focus {
+    outline: none;
+    border-color: #635bff;
+    box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.2);
+}
+
+/* Utilities */
+.hero-gradient {
+    /* Stripe-like diagonal gradient */
+    background: linear-gradient(135deg, #f6f9fc 0%, #eef1f6 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-shape {
+    position: absolute;
+    top: -10%;
+    right: -5%;
+    width: 60%;
+    height: 120%;
+    background: linear-gradient(135deg, rgba(99,91,255,0.05) 0%, rgba(99,91,255,0.1) 100%);
+    transform: skewX(-15deg);
+    border-radius: 3rem;
+    z-index: 0;
+}
