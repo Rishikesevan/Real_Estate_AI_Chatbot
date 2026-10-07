@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results | EliteNest</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#635bff',
+                        'primary-hover': '#5851eb',
+                        dark: '#0a2540',
+                        light: '#f6f9fc',
+                        slate: {
+                            400: '#8792a2',
+                            500: '#425466',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+
+<body class="bg-light text-slate-500 antialiased font-sans flex flex-col min-h-screen"
+      x-data="{ profileMenu: false, mobileMenu: false, scrolled: false }"
+      @scroll.window="scrolled = (window.pageYOffset > 50)">
+
+<header :class="scrolled ? 'glass-nav shadow-sm py-3' : 'bg-transparent py-5'" class="fixed top-0 w-full z-[1000] transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 flex justify-between items-center">
+        
+        <!-- Logo -->
+        <a th:href="@{/api/userIndex}" class="flex items-center gap-2 group border-none no-underline">
+            <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md">
+                <i class="bi bi-building"></i>
+            </div>
+            <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+        </a>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden select-none lg:flex items-center gap-8 font-medium text-sm text-slate-500">
+            <a th:href="@{/api/viewAllProperties}" class="hover:text-primary transition-colors flex items-center gap-2">
+                <i class="bi bi-building"></i> All Property
+            </a>
+            <a th:href="@{/api/showAgent}" class="hover:text-primary transition-colors flex items-center gap-2">
+                <i class="bi bi-people"></i> Find My Agent
+            </a>
+        </nav>
+
+        <!-- Profile Menu -->
+        <div class="hidden lg:flex items-center gap-4 relative" @click.away="profileMenu = false">
+            <button th:if="${user != null}" @click="profileMenu = !profileMenu" class="flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none">
+                <div class="text-right">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">User Portal</p>
+                    <p class="text-sm font-bold text-dark leading-none mt-1" th:text="${user.name}">Account</p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shadow-md border border-primary/20">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+            </button>
+
+            <!-- Profile Dropdown -->
+            <div x-show="profileMenu" x-cloak x-transition
+                 class="absolute top-full right-0 mt-3 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-[1100]">
+                <div class="p-4 bg-slate-50 border-b border-slate-100">
+                    <p class="text-xs font-semibold text-slate-500 mb-1">Welcome to</p>
+                    <p class="text-sm font-bold text-dark">EliteNest Platform</p>
+                </div>
+                <div class="p-2">
+                    <a th:href="@{/api/login}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 transition-colors text-sm font-medium">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                    <a th:if="${user!=null}" th:href="@{/api/save/edituserprofile}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 transition-colors text-sm font-medium">
+                        <i class="bi bi-sliders2"></i> Edit Profile
+                    </a>
+                    <div class="border-t border-slate-100 mt-2 pt-2" th:if="${user!=null}">
+                        <a th:href="@{/api/logout}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-red-50 text-red-600 transition-colors text-sm font-bold">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Toggle -->
+        <button aria-label="Toggle Menu" class="lg:hidden text-dark text-2xl" @click="mobileMenu = !mobileMenu">
+            <i class="bi" :class="mobileMenu ? 'bi-x' : 'bi-list'"></i>
+        </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div x-show="mobileMenu" x-transition.opacity class="absolute top-full left-0 w-full bg-white shadow-xl border-t border-slate-100 flex flex-col lg:hidden py-4 px-6 gap-4 z-[1000]">
+        <div class="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">User Portal</p>
+            <p class="text-sm font-bold text-dark leading-none" th:text="${user != null ? user.name : 'Guest'}">User</p>
+        </div>
+
+        <a th:href="@{/api/viewAllProperties}" class="font-bold text-primary flex items-center gap-3 p-2">
+            <i class="bi bi-building-fill text-lg"></i> All Property
+        </a>
+        <a th:href="@{/api/showAgent}" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3 p-2">
+            <i class="bi bi-people-fill text-lg"></i> Find Agent
+        </a>
+
+        <hr class="border-slate-100 my-2">
+        <th:block th:if="${user == null}">
+            <a th:href="@{/api/login}" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3 p-2">
+                <i class="bi bi-box-arrow-in-right text-lg"></i> Login
+            </a>
+        </th:block>
+        <th:block th:if="${user != null}">
+            <a th:href="@{/api/save/edituserprofile}" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3 p-2">
+                <i class="bi bi-sliders2 text-lg"></i> Edit Profile
+            </a>
+            <a th:href="@{/api/logout}" class="font-bold text-red-600 hover:text-red-700 flex items-center gap-3 p-2 mt-2">
+                <i class="bi bi-box-arrow-right text-lg"></i> Logout
+            </a>
+        </th:block>
+    </div>
+</header>
+
+<main class="flex-grow pt-32 pb-20 w-full max-w-7xl mx-auto px-6 lg:px-8">
+    
+    <div class="mb-10 text-center animate-fade-in-up">
+        <div class="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 text-primary rounded-full text-[10px] font-bold uppercase tracking-widest mb-3">
+            <i class="bi bi-search"></i> SEARCH RESULTS
+        </div>
+        <h1 class="text-4xl md:text-5xl font-extrabold text-dark tracking-tight mb-4">Properties Matching Your Search</h1>
+    </div>
+
+    <!-- ERROR MESSAGE -->
+    <div th:if="${error}" class="max-w-3xl mx-auto mb-12 p-6 rounded-2xl bg-red-50 border border-red-200 text-center shadow-sm animate-fade-in-up">
+        <div class="flex flex-col items-center justify-center gap-3">
+            <i class="bi bi-search text-red-400 text-4xl mb-2"></i>
+            <h3 class="text-sm font-bold text-red-700 uppercase tracking-widest">No Results Found</h3>
+            <p class="text-sm font-medium text-red-600 mb-4" th:text="${error}">Your searched property was not found</p>
+            <a th:href="@{/api/userIndex}" class="stripe-btn text-xs !bg-red-600 hover:!bg-red-700 text-white">
+                Back to Home <i class="bi bi-arrow-return-left"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- PROPERTIES GRID -->
+    <div th:if="${not #lists.isEmpty(searchProperties)}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in-up">
+        <div th:each="property : ${searchProperties}" class="stripe-card group flex flex-col">
+            <!-- Image Area -->
+            <div class="relative h-56 overflow-hidden">
+                <img th:src="@{/api/property/image/{id}(id=${property.id})}" alt="Property" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                <div class="absolute inset-0 bg-gradient-to-t from-dark/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                
+                <!-- Price Badge -->
+                <div class="absolute top-4 left-4 glass-nav px-3 py-1.5 rounded-lg shadow-sm border border-white/20">
+                    <span class="text-xs font-bold text-dark" th:text="'₹ ' + ${#numbers.formatDecimal(property.price,0,'COMMA',0,'POINT')}">Price</span>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-6 flex flex-col flex-grow">
+                <!-- Location -->
+                <p class="text-primary text-[10px] font-bold uppercase tracking-widest mb-2 flex items-center gap-1">
+                    <i class="bi bi-geo-alt"></i> <span th:text="${property.location}">Location</span>
+                </p>
+                
+                <!-- Title -->
+                <h3 class="text-lg font-bold text-dark mb-4 line-clamp-1" th:text="${property.title}">Property Title</h3>
+
+                <!-- Specs -->
+                <div class="grid grid-cols-2 gap-4 mb-5 pb-5 border-b border-slate-100 text-sm">
+                    <div class="flex items-center gap-2 text-slate-500">
+                        <i class="bi bi-door-open text-primary/70 text-lg"></i>
+                        <span class="font-semibold" th:text="${property.bhk + ' BHK'}">BHK</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-slate-500">
+                        <i class="bi bi-person-badge text-primary/70 text-lg"></i>
+                        <span class="font-semibold line-clamp-1" th:text="${property.agent != null ? property.agent.name : 'Exclusive'}">Agent</span>
+                    </div>
+                </div>
+
+                <!-- Agent Contact -->
+                <div th:if="${property.agent != null}" class="space-y-2 mb-6 text-xs font-medium text-slate-500">
+                    <div class="flex items-center justify-between">
+                        <span class="flex items-center gap-1.5"><i class="bi bi-telephone text-primary/70"></i> Phone</span>
+                        <span class="font-semibold text-dark" th:text="${property.agent.phone}">Phone</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="flex items-center gap-1.5"><i class="bi bi-envelope text-primary/70"></i> Email</span>
+                        <span class="font-semibold text-dark truncate max-w-[120px]" th:text="${property.agent.email}">Email</span>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-4">
+                    <a th:href="@{/api/viewAllProperties/details/{id}(id=${property.id})}" class="stripe-btn text-xs w-full justify-center py-2.5">
+                        Explore Property <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="bg-light pt-20 pb-10 border-t border-slate-200 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div class="md:col-span-1">
+                <a th:href="@{/}" class="flex items-center gap-2 mb-4 no-underline">
+                    <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md text-sm">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+                </a>
+                <p class="text-slate-500 text-sm leading-relaxed mb-6">
+                    The modern infrastructure for global real estate. Seamless, secure, and sophisticated.
+                </p>
+                <div class="flex gap-4">
+                    <a aria-label="Twitter" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-twitter-x"></i></a>
+                    <a aria-label="LinkedIn" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-linkedin"></i></a>
+                </div>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Platform</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="All Properties" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-grid"></i> All Properties</a></li>
+                    <li><a aria-label="Property Search" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-search"></i> Property Search</a></li>
+                    <li><a aria-label="Agent Directory" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-people"></i> Agent Directory</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Company</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="About Us" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">About Us</a></li>
+                    <li><a aria-label="Contact Support" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Contact Support</a></li>
+                    <li><a aria-label="Terms of Service" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Support</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Assistance</p></li>
+                    <li><a aria-label="Email Support" href="mailto:support@elitenest.com" class="text-primary font-bold no-underline">support@elitenest.com</a></li>
+                    <li class="pt-4"><span class="bg-indigo-50 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-indigo-100 italic">Premier Real Estate</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
+            <p>&copy; 2026 EliteNest Inc. All rights reserved.</p>
+            <p class="flex items-center gap-1"><i class="bi bi-shield-check text-emerald-500"></i> Secure & Verified Platform</p>
+        </div>
+    </div>
+</footer>
+
+<!-- Legacy script element preserved from original file -->
+<script>
+    const searchInput = document.getElementById("agentSearch");
+    const agentContainer = document.getElementById("agentContainer");
+
+    if(searchInput && agentContainer) {
+        searchInput.addEventListener("input", function () {
+          const keyword = this.value;
+
+          fetch(`/api/searchAgents?keyword=${keyword}`)
+            .then(res => res.json())
+            .then(data => {
+              agentContainer.innerHTML = "";
+              if (data.length === 0) {
+                agentContainer.innerHTML = `<p class="col-span-full text-center text-slate-400 font-semibold py-10">No agents found matching "${keyword}"</p>`;
+                return;
+              }
+              // Script payload intentionally left intact to maintain existing functionality if elements are dynamically injected.
+            })
+            .catch(err => console.error("Search error:", err));
+        });
+    }
+</script>
+</body>
+</html>

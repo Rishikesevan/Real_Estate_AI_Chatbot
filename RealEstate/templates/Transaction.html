@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recent Transactions | EliteNest</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#635bff',
+                        'primary-hover': '#5851eb',
+                        dark: '#0a2540',
+                        light: '#f6f9fc',
+                        slate: {
+                            400: '#8792a2',
+                            500: '#425466',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { overflow-x: hidden; }
+        [x-cloak] { display: none !important; }
+
+        .stat-card { background: white; border-radius: 1.5rem; padding: 1.5rem; border: 1px solid #e2e8f0; height: 100%; transition: all 0.3s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .stat-card:hover { transform: translateY(-5px); border-color: #635bff; box-shadow: 0 10px 20px rgba(99, 91, 255, 0.08); }
+        .stat-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: .15em; color: #8792a2; margin-bottom: 0.5rem; }
+        .stat-value { font-size: 1.5rem; font-weight: 800; color: #635bff; line-height: 1.2; }
+
+        .filter-bar { background: white; border-radius: 1.5rem; padding: 1.5rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .form-select { height: 48px; border-radius: 1rem; border: 1px solid #e2e8f0; background: #f8fafc; font-weight: 600; font-size: 0.875rem; cursor: pointer; color: #0a2540; transition: border-color 0.2s; }
+        .form-select:focus { border-color: #635bff; box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1); outline: none; }
+    </style>
+</head>
+
+<body class="bg-light text-slate-500 antialiased font-sans overflow-x-hidden" 
+      x-data="{ scrolled: false, profileMenu: false, mobileMenu: false }"
+      @scroll.window="scrolled = (window.pageYOffset > 20)"
+      :class="mobileMenu ? 'overflow-hidden' : ''">
+
+<header :class="scrolled ? 'glass-nav shadow-sm py-2' : 'bg-transparent py-3'" class="fixed top-0 w-full z-[1000] transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 flex justify-between items-center">
+        <!-- Logo -->
+        <a th:href="@{/api/userIndex}" class="flex items-center gap-2 group border-none no-underline">
+            <div class="w-8 h-8 rounded-lg text-white flex items-center justify-center shadow-md" style="background-color: #635bff;">
+                <i class="bi bi-building"></i>
+            </div>
+            <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+        </a>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden select-none lg:flex items-center gap-8 font-medium text-sm text-slate-500">
+            <a th:href="@{/}" class="hover:text-primary transition-colors flex items-center gap-2 no-underline text-slate-500"><i class="bi bi-people"></i> Find Agents</a>
+            <!-- <a th:href="@{/api/save/property}" class="hover:text-primary transition-colors flex items-center gap-2 no-underline text-slate-500"><i class="bi bi-house"></i> For Sale</a> -->
+            <!-- <a th:href="@{/api/newProject}" class="hover:text-primary transition-colors flex items-center gap-2 no-underline text-slate-500"><i class="bi bi-building-up"></i> New Projects</a> -->
+            <a th:href="@{/api/myProperty}" class="hover:text-primary transition-colors flex items-center gap-2 no-underline text-slate-500"><i class="bi bi-chat-left-dots"></i> Agent Response</a>
+        </nav>
+
+        <!-- Profile & Mobile Toggle -->
+        <div class="flex items-center gap-6">
+            <div class="relative hidden md:block" @click.away="profileMenu = false">
+                <button th:if="${user != null}" @click="profileMenu = !profileMenu" class="flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none">
+                    <div class="text-right">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">User Portal</p>
+                        <p class="text-sm font-bold text-dark leading-none mt-1" th:text="${user.name}">Guest User</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
+                        <i class="bi bi-person-fill" style="color: #635bff;"></i>
+                    </div>
+                </button>
+                <button th:unless="${user != null}" @click="profileMenu = !profileMenu" class="flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none">
+                    <div class="text-right">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">Portal</p>
+                        <p class="text-sm font-bold text-dark leading-none mt-1">Guest User</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center border border-slate-200">
+                        <i class="bi bi-person-fill" style="color: #635bff;"></i>
+                    </div>
+                </button>
+
+                <!-- Dropdown -->
+                <div x-show="profileMenu" x-cloak x-transition
+                     class="absolute top-full right-0 mt-3 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-[1100]">
+                    <div class="p-4 bg-slate-50 border-b border-slate-100">
+                        <p class="text-xs font-semibold text-slate-500 mb-1">Welcome to</p>
+                        <p class="text-sm font-bold text-dark">EliteNest Platform</p>
+                    </div>
+                    <div class="p-2">
+                        <a th:href="@{/api/login}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 transition-colors text-sm font-medium no-underline">
+                            <i class="bi bi-box-arrow-in-right"></i> Login
+                        </a>
+                        <a th:if="${user != null}" th:href="@{/api/save/edituserprofile}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 transition-colors text-sm font-medium no-underline">
+                            <i class="bi bi-sliders2"></i> Edit Profile
+                        </a>
+                        <div class="border-t border-slate-100 mt-2 pt-2" th:if="${user != null}">
+                            <a th:href="@{/api/logout}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-red-50 text-red-600 transition-colors text-sm font-bold no-underline">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Toggle -->
+            <button aria-label="Toggle Menu" @click="mobileMenu = !mobileMenu" class="md:hidden text-2xl text-dark">
+                <i class="bi" :class="mobileMenu ? 'bi-x' : 'bi-list'"></i>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- Mobile Menu Overlay -->
+<div x-show="mobileMenu" x-cloak class="fixed inset-0 z-[1200] lg:hidden">
+    <div x-show="mobileMenu" x-transition.opacity class="absolute inset-0 bg-dark/40 backdrop-blur-sm" @click="mobileMenu = false"></div>
+    <div x-show="mobileMenu" x-transition:enter="transition transform ease-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
+         class="absolute right-0 top-0 h-full w-72 bg-white shadow-2xl p-6 pt-24 space-y-4">
+        
+        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mb-1">Welcome to</p>
+            <p class="text-sm font-bold text-dark leading-none" th:text="${user != null ? user.name : 'Guest User'}">User Name</p>
+        </div>
+
+        <nav class="flex flex-col gap-2">
+            <a th:href="@{/}" class="font-bold text-slate-500 hover:text-primary flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition no-underline">
+                <i class="bi bi-people text-lg text-primary"></i> Find Agents
+            </a>
+            <a th:href="@{/api/save/property}" class="font-bold text-slate-500 hover:text-primary flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition no-underline">
+                <i class="bi bi-house text-lg text-primary"></i> For Sale
+            </a>
+            <a th:href="@{/api/newProject}" class="font-bold text-slate-500 hover:text-primary flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition no-underline">
+                <i class="bi bi-building-up text-lg text-primary"></i> New Projects
+            </a>
+            <a th:href="@{/api/myProperty}" class="font-bold text-slate-500 hover:text-primary flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition no-underline">
+                <i class="bi bi-chat-left-dots text-lg text-primary"></i> Agent Response
+            </a>
+        </nav>
+
+        <div class="border-t border-slate-100 pt-4 flex flex-col gap-2">
+            <a th:href="@{/api/login}" class="flex items-center gap-3 p-3 text-slate-600 font-bold hover:bg-slate-50 rounded-xl transition no-underline">
+                <i class="bi bi-person-badge"></i> Login
+            </a>
+            <a th:if="${user != null}" th:href="@{/api/save/edituserprofile}" class="flex items-center gap-3 p-3 text-slate-600 font-bold hover:bg-slate-50 rounded-xl transition no-underline">
+                <i class="bi bi-sliders2"></i> Edit Profile
+            </a>
+            <a th:if="${user != null}" th:href="@{/api/logout}" class="flex items-center gap-3 p-3 text-red-600 font-bold hover:bg-red-50 rounded-xl transition no-underline">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+        </div>
+    </div>
+</div>
+
+<main class="max-w-7xl mx-auto px-6 lg:px-8 pt-24 mb-24 min-h-screen flex flex-col flex-grow">
+    
+    <div class="mb-10 animate-fade-in-up">
+        <h1 class="text-3xl md:text-5xl font-extrabold text-dark tracking-tight mb-2">Market Insights</h1>
+        <p class="text-slate-500 text-lg font-medium">Recent transactions and analytics across EliteNest.</p>
+    </div>
+
+    <div class="row g-4 mb-8">
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-label">Transactions</div>
+                <div class="stat-value" th:text="${viewall}">0</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-label">Avg. Price</div>
+                <div class="stat-value !text-lg md:!text-2xl pt-1" th:text="'₹ ' + ${#numbers.formatDecimal(average, 0, 'COMMA', 0, 'POINT')}">0</div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card">
+                <div class="stat-label">Total Volume</div>
+                <div class="stat-value !text-lg md:!text-2xl pt-1" th:text="'₹ ' + ${#numbers.formatDecimal(totalPrice, 0, 'COMMA', 0, 'POINT')}">0</div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card">
+                <div class="stat-label">Sold This Month</div>
+                <div class="stat-value" th:text="${soldDate}">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-bar mb-10 shadow-sm animate-fade-in-up" style="animation-delay: 0.1s;">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <label class="stat-label px-1">Location</label>
+                <div class="relative">
+                    <select aria-label="Location Filter" id="locationFilter" class="form-select appearance-none w-full pl-4 pr-10" onchange="applyFilters()">
+                        <option value="">All Locations</option>
+                        <option th:each="location : ${#sets.toSet(viewAllTransaction.![property.location])}" th:value="${location}" th:text="${location}"></option>
+                    </select>
+                    <i class="bi bi-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="stat-label px-1">Type</label>
+                <div class="relative">
+                    <select aria-label="Type Filter" id="typeFilter" class="form-select appearance-none w-full pl-4 pr-10" onchange="applyFilters()">
+                        <option value="">All Types</option>
+                        <option th:each="type : ${#sets.toSet(viewAllTransaction.![property.propertyType])}" th:value="${type}" th:text="${type}"></option>
+                    </select>
+                    <i class="bi bi-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="stat-label px-1">Price Range</label>
+                <div class="relative">
+                    <select aria-label="Price Filter" id="priceFilter" class="form-select appearance-none w-full pl-4 pr-10" onchange="applyFilters()">
+                        <option value="">Any Price</option>
+                        <option value="0-10000000">Under ₹ 1Cr</option>
+                        <option value="10000000-50000000">₹ 1Cr - 5Cr</option>
+                        <option value="50000000-9999999999">₹ 5Cr+</option>
+                    </select>
+                    <i class="bi bi-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wrap the list in a container to resolve ID lookup issue in user's JS function -->
+    <div id="transactionsContainer" class="grid gap-6">
+        <div th:each="transaction : ${viewAllTransaction}"
+             class="group bg-white rounded-3xl border border-slate-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 hover:border-primary/30 transition-all duration-300"
+             th:attr="data-location=${transaction.property.location}, data-type=${transaction.property.propertyType}, data-price=${transaction.soldPrice}">
+
+            <div class="row g-0 flex-col md:flex-row">
+                <div class="col-12 col-md-4 relative overflow-hidden h-64 md:h-auto">
+                    <img th:src="@{/api/images/{id}(id=${transaction.property.id})}"
+                         class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Property">
+                </div>
+
+                <div class="col-12 col-md-8 p-6 md:p-8 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <span class="bg-indigo-50 text-primary px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-indigo-100"><i class="bi bi-check2-circle mr-1"></i> Sold</span>
+                                <span class="text-slate-400 text-[10px] font-bold uppercase tracking-widest" th:text="${#temporals.format(transaction.soldDate, 'dd MMM yyyy')}"></span>
+                            </div>
+                        </div>
+
+                        <h3 class="text-2xl font-bold text-dark mb-3 tracking-tight group-hover:text-primary transition-colors" th:text="${transaction.property.title}">Property Title</h3>
+
+                        <div class="flex flex-wrap gap-4 mb-6">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400"><i class="bi bi-geo-alt-fill"></i></div>
+                                <span class="text-xs font-bold text-slate-500 uppercase" th:text="${transaction.property.location}">Location</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400"><i class="bi bi-building-fill"></i></div>
+                                <span class="text-xs font-bold text-slate-500 uppercase" th:text="${transaction.property.propertyType}">Type</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <p class="stat-label mb-1">Final Sale Price</p>
+                            <p class="text-3xl font-extrabold text-dark tracking-tight" th:text="'₹ ' + ${#numbers.formatDecimal(transaction.soldPrice, 0, 'COMMA', 0, 'POINT')}"></p>
+                        </div>
+                        <a th:href="@{/api/view/sold/{pid}/{type}(pid=${transaction.property.id},type='noProperty')}"
+                           class="stripe-btn text-xs !py-3 w-full sm:w-auto shadow-sm group-hover:bg-primary-hover group-hover:shadow-md outline-none no-underline flex items-center justify-center gap-2">
+                            View Details <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Empty State Fallback -->
+        <div id="noResults" class="hidden text-center py-20 bg-white rounded-3xl border border-slate-200">
+            <i class="bi bi-search text-4xl text-slate-300 mb-4 inline-block"></i>
+            <h3 class="text-xl font-bold text-dark mb-2">No properties found</h3>
+            <p class="text-slate-500">Try adjusting your filters to see more results.</p>
+        </div>
+    </div>
+</main>
+
+<footer class="bg-light pt-20 pb-10 border-t border-slate-200 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div class="md:col-span-1">
+                <a th:href="@{/}" class="flex items-center gap-2 mb-4 no-underline">
+                    <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md text-sm">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+                </a>
+                <p class="text-slate-500 text-sm leading-relaxed mb-6">
+                    The modern infrastructure for global real estate. Seamless, secure, and sophisticated.
+                </p>
+                <div class="flex gap-4">
+                    <a aria-label="Twitter" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-twitter-x"></i></a>
+                    <a aria-label="LinkedIn" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-linkedin"></i></a>
+                </div>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Platform</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="All Properties" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-grid"></i> All Properties</a></li>
+                    <li><a aria-label="Property Search" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-search"></i> Property Search</a></li>
+                    <li><a aria-label="Agent Directory" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-people"></i> Agent Directory</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Company</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="About Us" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">About Us</a></li>
+                    <li><a aria-label="Contact Support" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Contact Support</a></li>
+                    <li><a aria-label="Terms of Service" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Support</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Assistance</p></li>
+                    <li><a href="mailto:support@elitenest.com" class="text-primary font-bold no-underline">support@elitenest.com</a></li>
+                    <li class="pt-4"><span class="bg-indigo-50 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-indigo-100 italic">Premier Real Estate</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
+            <p>&copy; 2026 EliteNest Inc. All rights reserved.</p>
+            <p class="flex items-center gap-1"><i class="bi bi-shield-check text-emerald-500"></i> Secure & Verified Platform</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    function applyFilters() {
+        const locationF = document.getElementById('locationFilter').value;
+        const typeF = document.getElementById('typeFilter').value;
+        const priceF = document.getElementById('priceFilter').value;
+        const container = document.getElementById('transactionsContainer');
+        const cards = container.querySelectorAll('[data-location]');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const loc = card.getAttribute('data-location');
+            const type = card.getAttribute('data-type');
+            const price = parseFloat(card.getAttribute('data-price')) || 0;
+            let show = true;
+
+            if (locationF && loc !== locationF) show = false;
+            if (typeF && type !== typeF) show = false;
+            if (priceF) {
+                const [min, max] = priceF.split('-').map(Number);
+                if (price < min || price > max) show = false;
+            }
+            card.style.display = show ? 'block' : 'none';
+            if (show) visibleCount++;
+        });
+
+        // Show/hide empty state
+        const emptyState = document.getElementById('noResults');
+        if (emptyState) {
+            emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+    }
+</script>
+</body>
+</html>

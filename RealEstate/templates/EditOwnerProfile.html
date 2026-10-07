@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Owner Profile | EliteNest</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#635bff',
+                        'primary-hover': '#5851eb',
+                        dark: '#0a2540',
+                        light: '#f6f9fc',
+                        slate: {
+                            400: '#8792a2',
+                            500: '#425466',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- global CSS -->
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+
+    <style>
+        [x-cloak] { display: none !important; }
+
+        .stripe-input {
+            width: 100%; height: 3rem; padding-left: 2.75rem; padding-right: 1rem;
+            background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.5rem;
+            outline: none; transition: all 0.2s; font-size: 0.875rem; color: #0a2540;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .stripe-input:focus { border-color: #635bff; box-shadow: 0 0 0 4px rgba(99, 91, 255, 0.1); }
+        .stripe-input[readonly] { background-color: #f8fafc; color: #94a3b8; cursor: not-allowed; }
+    </style>
+</head>
+<body class="bg-light text-slate-500 antialiased font-sans flex flex-col min-h-screen" x-data="{
+    profileMenu: false,
+    mobileMenu: false,
+    scrolled: false
+}" @scroll.window="scrolled = (window.pageYOffset > 20)">
+
+<header :class="scrolled ? 'glass-nav shadow-sm py-3' : 'bg-transparent py-5'" class="fixed top-0 w-full z-[1000] transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 flex justify-between items-center">
+        
+        <!-- Logo -->
+        <a th:href="@{/owner/homepage}" class="flex items-center gap-2 group">
+            <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md">
+                <i class="bi bi-building"></i>
+            </div>
+            <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+        </a>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden select-none lg:flex items-center gap-8 font-medium text-sm text-slate-500">
+            <a th:href="@{/api/owner/showAgent}" class="hover:text-primary transition-colors flex items-center gap-2">
+                <i class="bi bi-people"></i> Find Agent
+            </a>
+            <a th:href="@{/api/save/property}" class="hover:text-primary transition-colors flex items-center gap-2">
+                <i class="bi bi-plus-circle"></i> Post Property
+            </a>
+            <a th:href="@{/api/newProject}" class="hover:text-primary transition-colors flex items-center gap-2">
+                <i class="bi bi-building-add"></i> Post Project
+            </a>
+            <a th:href="@{/api/myProperty}" class="hover:text-primary transition-colors flex items-center gap-2">
+                <i class="bi bi-grid"></i> My Portfolio
+            </a>
+        </nav>
+
+        <!-- Profile Menu -->
+        <div class="hidden lg:flex items-center gap-4 relative" @click.away="profileMenu = false">
+            <button th:if="${owner!=null}" @click="profileMenu = !profileMenu" class="flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none">
+                <div class="text-right">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">Owner Portal</p>
+                    <p class="text-sm font-bold text-dark leading-none mt-1" th:text="${owner.name}">Owner Name</p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+            </button>
+
+            <!-- Profile Dropdown -->
+            <div x-show="profileMenu" x-cloak x-transition
+                 class="absolute top-full right-0 mt-3 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-[1100]">
+                <div class="p-4 bg-slate-50 border-b border-slate-100">
+                    <p class="text-xs font-semibold text-slate-500 mb-1">Welcome back,</p>
+                    <p class="text-sm font-bold text-dark" th:text="${owner.name}">Owner Name</p>
+                </div>
+                <div class="p-2">
+                    <a th:href="@{/api/logout}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-red-50 text-red-600 transition-colors text-sm font-bold">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Toggle -->
+        <button aria-label="Toggle Menu" class="lg:hidden text-dark text-2xl" @click="mobileMenu = !mobileMenu">
+            <i class="bi" :class="mobileMenu ? 'bi-x' : 'bi-list'"></i>
+        </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div x-show="mobileMenu" x-transition.opacity class="absolute top-full left-0 w-full bg-white shadow-xl border-t border-slate-100 flex flex-col lg:hidden py-4 px-6 gap-4 z-[1000]">
+        <div class="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Owner Portal</p>
+            <p class="text-sm font-bold text-dark leading-none" th:text="${owner.name}">Owner Name</p>
+        </div>
+
+        <a th:href="@{/api/owner/showAgent}" class="font-medium text-slate-500 hover:text-primary flex items-center justify-between p-2">
+            <span class="flex items-center gap-3"><i class="bi bi-people text-lg"></i> Find Agent</span>
+        </a>
+        <a th:href="@{/api/myProperty}" class="font-medium text-slate-500 hover:text-primary flex items-center justify-between p-2">
+            <span class="flex items-center gap-3"><i class="bi bi-grid text-lg"></i> My Portfolio</span>
+        </a>
+
+        <hr class="border-slate-100 my-2">
+        
+        <a th:href="@{/api/logout}" class="font-bold text-red-600 hover:text-red-700 flex items-center gap-3 p-2">
+            <i class="bi bi-box-arrow-right text-lg"></i> Logout
+        </a>
+    </div>
+</header>
+
+<main class="flex-grow pt-32 pb-20 max-w-5xl mx-auto px-6 lg:px-8 w-full">
+
+    <div class="mb-10 flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-extrabold text-dark tracking-tight mb-2">Owner Profile Settings</h1>
+            <p class="text-slate-500 text-sm">Update your personal information, address, and security credentials.</p>
+        </div>
+    </div>
+
+    <form th:action="@{/api/owner/updateprofile}" th:object="${owner}" method="POST" enctype="multipart/form-data">
+        <input type="hidden" th:field="*{id}">
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            
+            <!-- Sidebar Profile Card -->
+            <div class="lg:col-span-1 stripe-card p-6 flex flex-col items-center text-center">
+                <div class="w-24 h-24 rounded-full bg-indigo-50 text-primary flex items-center justify-center text-4xl mb-4 border-4 border-white shadow-sm">
+                    <i class="bi bi-briefcase-fill"></i>
+                </div>
+                <h2 class="text-lg font-bold text-dark mb-1" th:text="${owner.name}">Owner/Company Name</h2>
+                <p class="text-xs text-slate-500 mb-6" th:text="${owner.email}">owner@example.com</p>
+
+                <div class="w-full pt-4 border-t border-slate-100">
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3 text-left">Active Sessions</p>
+                    <div class="flex items-center gap-3 bg-green-50 text-green-700 p-3 rounded-xl border border-green-100 text-xs font-semibold text-left">
+                        <i class="bi bi-laptop"></i> This Device (Current)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Edit Details -->
+            <div class="lg:col-span-2 stripe-card p-8 md:p-10">
+                <h3 class="text-lg font-bold text-dark mb-6 pb-4 border-b border-slate-100">Personal Information</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <!-- Full Name -->
+                    <div class="space-y-1.5 md:col-span-2">
+                        <label class="block text-xs font-bold text-dark">Full Name / Company Name</label>
+                        <div class="relative">
+                            <i class="bi bi-person absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input aria-label="Full Name" type="text" th:field="*{name}" class="stripe-input" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Phone -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-dark">Phone Number</label>
+                        <div class="relative">
+                            <i class="bi bi-telephone absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input aria-label="Phone Number" type="text" th:field="*{phone}" class="stripe-input">
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-dark flex justify-between items-center">
+                            Email Address 
+                            <span class="text-[9px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full uppercase tracking-widest font-bold">Static</span>
+                        </label>
+                        <div class="relative">
+                            <i class="bi bi-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                            <input aria-label="Email Address" type="email" th:field="*{email}" readonly class="stripe-input">
+                        </div>
+                    </div>
+                    
+                    <!-- Address -->
+                    <div class="space-y-1.5 md:col-span-2">
+                        <label class="block text-xs font-bold text-dark">Address / Location</label>
+                        <div class="relative">
+                            <i class="bi bi-geo-alt absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input aria-label="Address" type="text" th:field="*{address}" class="stripe-input">
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="text-lg font-bold text-dark mb-6 pb-4 border-b border-slate-100">Security</h3>
+                
+                <div class="grid grid-cols-1 gap-6 mb-8">
+                    <div class="space-y-1.5 md:w-1/2">
+                        <label class="block text-xs font-bold text-dark">Password</label>
+                        <div class="relative">
+                            <i class="bi bi-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="password" th:field="*{password}" class="stripe-input" placeholder="••••••••">
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-1">Leave blank to keep your current password</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-4 mt-10 pt-6 border-t border-slate-100">
+                    <a th:href="@{/owner/homepage}" class="px-6 py-2.5 text-sm font-semibold text-slate-600 hover:text-dark transition-colors">Cancel</a>
+                    <button type="submit" class="stripe-btn px-8 py-2.5 text-sm">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</main>
+
+<footer class="bg-light pt-20 pb-10 border-t border-slate-200 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div class="md:col-span-1">
+                <a th:href="@{/}" class="flex items-center gap-2 mb-4 no-underline">
+                    <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md text-sm">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+                </a>
+                <p class="text-slate-500 text-sm leading-relaxed mb-6">
+                    The modern infrastructure for global real estate. Seamless, secure, and sophisticated.
+                </p>
+                <div class="flex gap-4">
+                    <a aria-label="Twitter" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-twitter-x"></i></a>
+                    <a aria-label="LinkedIn" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-linkedin"></i></a>
+                </div>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Platform</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="All Properties" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-grid"></i> All Properties</a></li>
+                    <li><a aria-label="Property Search" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-search"></i> Property Search</a></li>
+                    <li><a aria-label="Agent Directory" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-people"></i> Agent Directory</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Company</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="About Us" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">About Us</a></li>
+                    <li><a aria-label="Contact Support" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Contact Support</a></li>
+                    <li><a aria-label="Terms of Service" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Support</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Assistance</p></li>
+                    <li><a aria-label="Email Support" href="mailto:support@elitenest.com" class="text-primary font-bold no-underline">support@elitenest.com</a></li>
+                    <li class="pt-4"><span class="bg-indigo-50 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-indigo-100 italic">Premier Real Estate</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
+            <p>&copy; 2026 EliteNest Inc. All rights reserved.</p>
+            <p class="flex items-center gap-1"><i class="bi bi-shield-check text-emerald-500"></i> Secure & Verified Platform</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

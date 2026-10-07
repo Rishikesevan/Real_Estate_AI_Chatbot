@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Sign Up | EliteNest</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#635bff',
+                        'primary-hover': '#5851eb',
+                        dark: '#0a2540',
+                        light: '#f6f9fc',
+                        slate: {
+                            400: '#8792a2',
+                            500: '#425466',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- global CSS -->
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+
+    <style>
+        [x-cloak] { display: none !important; }
+
+        .stripe-input {
+            width: 100%; height: 3rem; padding-left: 1rem; padding-right: 1rem;
+            background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.5rem;
+            outline: none; transition: all 0.2s; font-size: 0.875rem; color: #0a2540;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .stripe-input:focus { border-color: #635bff; box-shadow: 0 0 0 4px rgba(99, 91, 255, 0.1); }
+        .stripe-input.error { border-color: #ef4444; background-color: #fef2f2; }
+        .stripe-input.error:focus { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1); }
+        
+        .form-animate { animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-light text-slate-500 antialiased font-sans flex flex-col min-h-screen">
+
+<header class="h-20 fixed top-0 w-full bg-light/80 backdrop-blur-md border-b border-slate-200 flex items-center px-6 transition-all duration-300 z-50">
+    <div class="max-w-7xl mx-auto w-full flex justify-between items-center">
+        <a th:href="@{/}" class="flex items-center gap-2 group">
+            <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md">
+                <i class="bi bi-building"></i>
+            </div>
+            <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+        </a>
+
+        <div class="flex items-center gap-4">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 hidden md:block">Owner Portal</span>
+            <a th:href="@{/api/login}" class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors flex items-center gap-2">
+                Sign In <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="flex-grow grid lg:grid-cols-2 pt-20">
+    <!-- Left form side -->
+    <div class="flex items-center justify-center p-6 md:p-12 form-animate">
+        <div class="w-full max-w-md">
+            <div class="mb-8">
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 text-primary rounded-full text-[10px] font-bold uppercase tracking-widest mb-4 border border-indigo-100">
+                    <i class="bi bi-briefcase"></i> Real Estate Owners
+                </div>
+                <h1 class="text-3xl font-bold text-dark tracking-tight mb-2">Create Owner Account</h1>
+                <p class="text-slate-500 text-sm">Join the EliteNest network to list properties and launch projects globally.</p>
+            </div>
+
+            <form th:action="@{/api/owner/save}" method="post" th:object="${ownerSignup}" class="space-y-5">
+
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-dark">Full Name / Company Name</label>
+                    <input type="text" name="name" th:field="*{name}" required
+                           placeholder="e.g. John Doe Properties"
+                           class="stripe-input"
+                           th:classappend="${#fields.hasErrors('name')} ? 'error' : ''">
+                    <p th:errors="*{name}" class="text-red-500 text-xs mt-1 font-medium"></p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-dark">Email Address</label>
+                        <input type="email" name="email" th:field="*{email}" required
+                               placeholder="you@company.com"
+                               class="stripe-input"
+                               th:classappend="${#fields.hasErrors('email')} ? 'error' : ''">
+                        <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-red-500 text-xs mt-1 font-medium"></p>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-dark">Phone Number</label>
+                        <input type="tel" name="phone" th:field="*{phone}" required
+                               placeholder="+1 (555) 000-0000"
+                               class="stripe-input"
+                               th:classappend="${#fields.hasErrors('phone')} ? 'error' : ''">
+                        <p th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="text-red-500 text-xs mt-1 font-medium"></p>
+                    </div>
+                </div>
+                
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-dark">Address / Location</label>
+                    <input type="text" name="address" th:field="*{address}" required
+                           placeholder="e.g. 100 Business Park, NY"
+                           class="stripe-input"
+                           th:classappend="${#fields.hasErrors('address')} ? 'error' : ''">
+                    <p th:errors="*{address}" class="text-red-500 text-xs mt-1 font-medium"></p>
+                </div>
+
+                <div class="space-y-1.5 relative">
+                    <label class="block text-xs font-bold text-dark">Password</label>
+                    <div class="relative">
+                        <input type="password" name="password" id="password" th:field="*{password}" required
+                               placeholder="••••••••"
+                               class="stripe-input pr-10"
+                               th:classappend="${#fields.hasErrors('password')} ? 'error' : ''">
+
+                        <button aria-label="Toggle Password Visibility" type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
+                            <i id="eyeIcon" class="bi bi-eye-slash"></i>
+                        </button>
+                    </div>
+                    <p th:errors="*{password}" class="text-red-500 text-xs mt-1 font-medium" style="white-space: pre-line;"></p>
+                    
+                    <!-- Password Rules -->
+                    <div class="text-xs space-y-1 mt-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        <p id="rule-length" class="text-slate-500 flex items-center gap-2"><i class="bi bi-x text-slate-300"></i> Minimum 8 characters</p>
+                        <p id="rule-upper" class="text-slate-500 flex items-center gap-2"><i class="bi bi-x text-slate-300"></i> One uppercase letter</p>
+                        <p id="rule-lower" class="text-slate-500 flex items-center gap-2"><i class="bi bi-x text-slate-300"></i> One lowercase letter</p>
+                        <p id="rule-digit" class="text-slate-500 flex items-center gap-2"><i class="bi bi-x text-slate-300"></i> One number</p>
+                        <p id="rule-special" class="text-slate-500 flex items-center gap-2"><i class="bi bi-x text-slate-300"></i> One special character</p>
+                    </div>
+                </div>
+
+                <button type="submit" id="registerBtn" class="stripe-btn w-full mt-8 py-3.5 text-sm">
+                    <span id="btnText">Create Owner Account</span>
+                </button>
+                
+                <p class="text-[11px] text-slate-500 text-center mt-4">
+                    By registering, you agree to our <a href="#" class="text-primary hover:underline">Terms of Service</a> and <a href="#" class="text-primary hover:underline">Owner Guidelines</a>.
+                </p>
+            </form>
+            
+        </div>
+    </div>
+
+    <!-- Right Side Hero Image -->
+    <div class="hidden lg:block relative bg-slate-900 border-l border-slate-200 overflow-hidden">
+        <img alt="Hero Image" src="https://images.unsplash.com/photo-1582407947304-fd86f028f716?q=80&w=1200&auto=format&fit=crop"
+             class="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay">
+        <div class="absolute inset-0 bg-gradient-to-t from-dark/90 via-dark/40 to-transparent"></div>
+
+        <div class="absolute bottom-12 left-12 right-12">
+            <h2 class="text-3xl font-bold text-white mb-6">Your future <span class="text-primary italic font-serif">starts here.</span></h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-4">
+                    <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center text-white mb-3">
+                        <i class="bi bi-rocket-takeoff"></i>
+                    </div>
+                    <p class="text-white font-semibold text-sm mb-1">Off-Plan Launches</p>
+                    <p class="text-slate-300 text-xs">Access to elite buyers</p>
+                </div>
+                <div class="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-4">
+                    <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center text-white mb-3">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <p class="text-white font-semibold text-sm mb-1">AI Valuations</p>
+                    <p class="text-slate-300 text-xs">Real-time market tracking</p>
+                </div>
+            </div>
+            
+            <div class="mt-8 flex justify-between items-center text-slate-400 text-[10px] font-bold uppercase tracking-widest pt-6 border-t border-white/10">
+                <span>Verified Portal</span>
+                <span>Est. 2026</span>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    document.querySelector("form").addEventListener("submit", function () {
+        const btn = document.getElementById("registerBtn");
+        const text = document.getElementById("btnText");
+        btn.disabled = true;
+        btn.classList.add("opacity-70", "cursor-not-allowed");
+        text.innerHTML = '<i class="bi bi-arrow-repeat animate-spin inline-block mr-2"></i> Registering...';
+    });
+
+    function togglePassword() {
+        const passwordInput = document.getElementById("password");
+        const eyeIcon = document.getElementById("eyeIcon");
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            eyeIcon.classList.remove("bi-eye-slash");
+            eyeIcon.classList.add("bi-eye");
+        } else {
+            passwordInput.type = "password";
+            eyeIcon.classList.remove("bi-eye");
+            eyeIcon.classList.add("bi-eye-slash");
+        }
+    }
+
+    const passwordInput = document.getElementById("password");
+    passwordInput.addEventListener("input", function () {
+        const value = passwordInput.value;
+        validateRule("rule-lower", /[a-z]/.test(value), "One lowercase letter");
+        validateRule("rule-upper", /[A-Z]/.test(value), "One uppercase letter");
+        validateRule("rule-digit", /\d/.test(value), "One number");
+        validateRule("rule-special", /[@$!%*?&]/.test(value), "One special character");
+        validateRule("rule-length", value.length >= 8, "Minimum 8 characters");
+    });
+
+    function validateRule(id, condition, text) {
+        const el = document.getElementById(id);
+        if (condition) {
+            el.className = "text-green-600 flex items-center gap-2";
+            el.innerHTML = '<i class="bi bi-check text-lg leading-none"></i> ' + text;
+        } else {
+            el.className = "text-slate-500 flex items-center gap-2";
+            el.innerHTML = '<i class="bi bi-x text-slate-300 text-lg leading-none"></i> ' + text;
+        }
+    }
+</script>
+<footer class="bg-light pt-20 pb-10 border-t border-slate-200 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div class="md:col-span-1">
+                <a th:href="@{/}" class="flex items-center gap-2 mb-4 no-underline">
+                    <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md text-sm">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+                </a>
+                <p class="text-slate-500 text-sm leading-relaxed mb-6 text-left">
+                    The modern infrastructure for global real estate. Seamless, secure, and sophisticated.
+                </p>
+                <div class="flex gap-4">
+                    <a aria-label="Twitter" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-twitter-x"></i></a>
+                    <a aria-label="LinkedIn" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-linkedin"></i></a>
+                </div>
+            </div>
+
+            <div class="text-left">
+                <h5 class="text-dark font-bold mb-6">Platform</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="All Properties" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-grid"></i> All Properties</a></li>
+                    <li><a aria-label="Property Search" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-search"></i> Property Search</a></li>
+                    <li><a aria-label="Agent Directory" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-people"></i> Agent Directory</a></li>
+                </ul>
+            </div>
+
+            <div class="text-left">
+                <h5 class="text-dark font-bold mb-6">Company</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="About Us" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">About Us</a></li>
+                    <li><a aria-label="Contact Support" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Contact Support</a></li>
+                    <li><a aria-label="Terms of Service" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <div class="text-left">
+                <h5 class="text-dark font-bold mb-6">Support</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Assistance</p></li>
+                    <li><a aria-label="Support Email" href="mailto:support@elitenest.com" class="text-primary font-bold no-underline">support@elitenest.com</a></li>
+                    <li class="pt-4"><span class="bg-indigo-50 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-indigo-100 italic">Premier Real Estate</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
+            <p>&copy; 2026 EliteNest Inc. All rights reserved.</p>
+            <p class="flex items-center gap-1"><i class="bi bi-shield-check text-emerald-500"></i> Secure & Verified Platform</p>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

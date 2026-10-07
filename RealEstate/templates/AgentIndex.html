@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:x-transition="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Dashboard | EliteNest</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#635bff',
+                        'primary-hover': '#5851eb',
+                        dark: '#0a2540',
+                        light: '#f6f9fc',
+                        slate: {
+                            400: '#8792a2',
+                            500: '#425466',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Global CSS -->
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-light text-slate-500 antialiased" x-data="{
+    profileMenu: false,
+    mobileMenu: false,
+    scrolled: false,
+    hasSuccess: new URLSearchParams(window.location.search).has('success'),
+}" @scroll.window="scrolled = (window.pageYOffset > 20)">
+
+    <!-- Navigation -->
+    <header :class="scrolled ? 'glass-nav shadow-sm py-3' : 'bg-transparent py-5'" class="fixed top-0 w-full z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 flex justify-between items-center">
+            
+            <!-- Logo -->
+            <a th:href="@{/api/agentIndex}" class="flex items-center gap-2 group">
+                <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md">
+                    <i class="bi bi-building"></i>
+                </div>
+                <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+            </a>
+
+            <!-- Desktop Nav -->
+            <nav class="hidden select-none lg:flex items-center gap-8 font-medium text-sm text-slate-500">
+                <a th:href="@{/api/agent/agentProperties}" class="hover:text-primary transition-colors flex items-center gap-2">
+                    <i class="bi bi-building"></i> My Properties
+                </a>
+                <a th:href="@{/api/agent/enquiriesofusers}" class="hover:text-primary transition-colors flex items-center gap-2 relative">
+                    <i class="bi bi-envelope"></i> Enquiries
+                    <span class="absolute -top-2 -right-4 bg-primary text-white text-[9px] px-1.5 py-0.5 rounded-full font-black shadow-sm" th:text="${enquiries.size()}">0</span>
+                </a>
+            </nav>
+
+            <!-- Desktop Profile Menu -->
+            <div class="hidden lg:flex items-center gap-4 relative" @click.away="profileMenu = false">
+                <button @click="profileMenu = !profileMenu" class="flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none">
+                    <div class="text-right">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">Agent Portal</p>
+                        <p class="text-sm font-bold text-dark leading-none mt-1" th:text="${agent.name}">Agent Name</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center object-cover border border-primary/20 overflow-hidden">
+                        <img aria-label="Agent Image" th:if="${agent.image != null}" th:src="@{/api/agent/image/{id}(id=${agent.id})}" class="w-full h-full object-cover">
+                        <i aria-label="Agent Image" th:unless="${agent.image != null}" class="bi bi-person-fill"></i>
+                    </div>
+                </button>
+
+                <!-- Profile Dropdown -->
+                <div x-show="profileMenu" x-cloak x-transition
+                     class="absolute top-full right-0 mt-3 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-[110]">
+                    <div class="p-4 bg-slate-50 border-b border-slate-100">
+                        <p class="text-xs font-semibold text-slate-500 mb-1">Authorized Agency</p>
+                        <p class="text-sm font-bold text-dark" th:text="${agent.companyName}">Agency Name</p>
+                    </div>
+                    <div class="p-2">
+                        <a th:href="@{/api/save/ediprofile}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 transition-colors text-sm font-medium">
+                            <i class="bi bi-sliders2"></i> Edit Profile
+                        </a>
+                        <div class="border-t border-slate-100 mt-2 pt-2">
+                            <a th:href="@{/api/agent/logout}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-red-50 text-red-600 transition-colors text-sm font-bold">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button aria-label="Toggle menu" class="lg:hidden text-dark text-2xl" @click="mobileMenu = !mobileMenu">
+                <i class="bi" :class="mobileMenu ? 'bi-x' : 'bi-list'"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div x-show="mobileMenu" x-transition.opacity class="absolute top-full left-0 w-full bg-white shadow-xl border-t border-slate-100 flex flex-col lg:hidden py-4 px-6 gap-4 z-[100]">
+            <div class="flex items-center gap-3 mb-2 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center overflow-hidden">
+                    <img aria-label="Agent Image" th:if="${agent.image != null}" th:src="@{/api/agent/image/{id}(id=${agent.id})}" class="w-full h-full object-cover">
+                    <i aria-label="Agent Image" th:unless="${agent.image != null}" class="bi bi-person-fill border border-primary/20"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-bold text-dark leading-tight" th:text="${agent.name}">Alex Sterling</p>
+                    <p class="text-xs font-medium text-slate-500" th:text="${agent.companyName}">Luxury Realty</p>
+                </div>
+            </div>
+            
+            <a th:href="@{/api/agent/agentProperties}" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3">
+                <i class="bi bi-building text-lg"></i> My Properties
+            </a>
+            <a th:href="@{/agent/enquiries}" class="font-medium text-slate-500 hover:text-primary flex items-center justify-between">
+                <span class="flex items-center gap-3"><i class="bi bi-envelope text-lg"></i> Enquiries</span>
+                <span class="bg-primary text-white text-xs px-2 py-0.5 rounded-full" th:text="${enquiries.size()}">0</span>
+            </a>
+            <hr class="border-slate-100 my-2">
+            <a th:href="@{/api/save/ediprofile}" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3">
+                <i class="bi bi-sliders2 text-lg"></i> Edit Profile
+            </a>
+            <a th:href="@{/api/agent/logout}" class="font-bold text-red-600 hover:text-red-700 flex items-center gap-3 mt-2">
+                <i class="bi bi-box-arrow-right text-lg"></i> Logout
+            </a>
+        </div>
+    </header>
+
+    <!-- Success Toast Alert -->
+    <div th:if="${param.success}" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
+         x-transition class="fixed top-24 right-5 z-[2000] flex items-center w-full max-w-xs p-4 bg-white rounded-xl shadow-lg border-l-4 border-green-500">
+        <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 bg-green-50 rounded-lg">
+            <i class="bi bi-check-lg"></i>
+        </div>
+        <div class="ms-3 text-sm font-semibold text-dark">Profile Updated Successfully</div>
+        <button aria-label="Close" type="button" class="ms-auto text-slate-400 hover:text-dark hover:bg-slate-50 rounded-lg p-1.5" @click="show = false">
+            <i aria-label="Close" class="bi bi-x text-lg"></i>
+        </button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="pt-32 pb-20 max-w-7xl mx-auto px-6 lg:px-8">
+        <!-- Dashboard Header -->
+        <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-2 mb-2 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-full inline-flex">
+                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                    <p class="text-xs font-bold text-primary tracking-wide">System Live</p>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-dark tracking-tight">Intelligence Dashboard</h1>
+            </div>
+            <p class="text-slate-500 text-sm">Last Login: <span class="text-dark font-bold">Just now</span></p>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+            <!-- Left Sidebar Profile -->
+            <div class="xl:col-span-4 space-y-6">
+                <div class="stripe-card p-8">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="relative mb-6">
+                            <div class="w-32 h-32 rounded-[2rem] overflow-hidden shadow-md transform rotate-2 hover:rotate-0 transition-transform duration-300">
+                                <img aria-label="Agent Image" th:if="${agent.image != null}" th:src="@{/api/agent/image/{id}(id=${agent.id})}" class="w-full h-full object-cover">
+                            </div>
+                            <div class="absolute -bottom-2 -right-2 bg-white p-1.5 rounded-xl shadow-lg">
+                                <div class="bg-green-100 text-green-600 p-1.5 rounded-lg text-xs leading-none">
+                                    <i class="bi bi-patch-check-fill"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h2 class="text-2xl font-bold text-dark mb-1" th:text="${agent.name}">Alex Sterling</h2>
+                        <p class="text-sm font-semibold text-primary mb-8" th:text="${agent.companyName}">Luxury Realty</p>
+
+                        <div class="w-full space-y-3">
+                            <div class="flex items-center justify-between p-4 bg-light rounded-xl border border-slate-100">
+                                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Lic No</span>
+                                <span class="text-sm font-bold text-dark" th:text="${agent.licenseNumber}">#Lic-0000</span>
+                            </div>
+                            <div class="flex items-center justify-between p-4 bg-light rounded-xl border border-slate-100">
+                                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Contact</span>
+                                <span class="text-sm font-bold text-dark" th:text="${agent.phone}">+971 50 123 4567</span>
+                            </div>
+                            <div class="flex items-center justify-between p-4 bg-light rounded-xl border border-slate-100">
+                                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Email</span>
+                                <span class="text-sm font-bold text-primary truncate max-w-[150px]" th:text="${agent.email}">alex@realty.com</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Panel -->
+            <div class="xl:col-span-8 space-y-8">
+                <!-- Stat Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Stat 1 -->
+                    <div class="stripe-card bg-primary text-white p-8 relative overflow-hidden">
+                        <div class="relative z-10">
+                            <p class="text-xs font-bold text-indigo-100 uppercase tracking-wide mb-2">My Properties</p>
+                            <h3 class="text-5xl font-extrabold" th:text="${properties.size()}">12</h3>
+                            <div class="mt-4 flex items-center gap-2">
+                                <span class="text-xs font-medium bg-white/20 px-3 py-1 rounded-full">Active Listings</span>
+                            </div>
+                        </div>
+                        <i class="bi bi-building absolute -bottom-4 -right-2 text-8xl text-white/10 transform -rotate-12"></i>
+                    </div>
+
+                    <!-- Stat 2 -->
+                    <div class="stripe-card p-8 bg-white relative overflow-hidden">
+                        <div class="relative z-10">
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Active Enquiries</p>
+                            <h3 class="text-5xl font-extrabold text-dark" th:text="${enquiries.size()}">24</h3>
+                            <div class="mt-4 flex items-center gap-2">
+                                <span class="text-xs font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full">New leads pending</span>
+                            </div>
+                        </div>
+                        <i class="bi bi-chat-left-text absolute -bottom-4 -right-2 text-8xl text-slate-50 transform -rotate-12"></i>
+                    </div>
+                </div>
+
+                <!-- Alpine Enquiries Component -->
+                <div x-data="agentComponent()" class="stripe-card overflow-hidden h-auto min-h-[500px]">
+                    <!-- Table Header -->
+                    <div class="px-8 py-5 border-b border-slate-100 flex items-center justify-between bg-white">
+                        <h3 class="font-bold text-dark flex items-center gap-2">
+                            <i class="bi bi-envelope-open text-primary"></i> Recent Communications
+                        </h3>
+                        <a th:href="@{/api/agent/enquiriesofusers}" class="text-sm font-semibold text-primary hover:text-primary-hover">View All</a>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="relative p-6 bg-white min-h-[400px]">
+                        
+                        <!-- Subscription overlay -->
+                        <div x-show="!isSubscribed" x-cloak class="absolute inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
+                            <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 text-center max-w-sm mx-4">
+                                <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="bi bi-shield-lock text-primary text-2xl"></i>
+                                </div>
+                                <h4 class="font-bold text-dark text-lg mb-2">Premium Required</h4>
+                                <p class="text-sm text-slate-500 mb-6 leading-relaxed">
+                                    Unlock lead details and reply to enquiries by activating your agent premium plan.
+                                </p>
+
+                                <!-- Plan Selection -->
+                                <div class="mb-6 flex justify-center gap-2">
+                                    <button type="button"
+                                            @click="selectedPlan = 'ONE_WEEK'"
+                                            :class="selectedPlan === 'ONE_WEEK' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600'"
+                                            class="px-4 py-2 rounded-lg font-semibold text-xs border border-transparent transition-all">ONE WEEK</button>
+                                    <button type="button"
+                                            @click="selectedPlan = 'ONE_MONTH'"
+                                            :class="selectedPlan === 'ONE_MONTH' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600'"
+                                            class="px-4 py-2 rounded-lg font-semibold text-xs border border-transparent transition-all">ONE MONTH</button>
+                                </div>
+
+                                <button type="button" @click="payNow()" class="stripe-btn w-full py-3">
+                                    Upgrade to View <i class="bi bi-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Leads Table -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-slate-200">
+                                        <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Property</th>
+                                        <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Image</th>
+                                        <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Lead Message</th>
+                                        <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <template x-for="enquiry in enquiries" :key="enquiry.id">
+                                        <tr class="hover:bg-slate-50 transition-colors">
+                                            <td class="px-4 py-4 align-top">
+                                                <p class="text-sm font-bold text-dark mb-1" x-text="enquiry.property.title"></p>
+                                                <p class="text-xs text-slate-500 flex items-center gap-1">
+                                                    <i class="bi bi-geo-alt"></i> <span x-text="enquiry.property.location"></span>
+                                                </p>
+                                            </td>
+                                            <td class="px-4 py-4 align-top">
+                                                <div class="w-24 h-16 rounded-md overflow-hidden bg-slate-100 border border-slate-200">
+                                                    <img x-show="enquiry.property.image"
+                                                         :src="`/api/property/image/${enquiry.property.id}`"
+                                                         alt="Property Image"
+                                                         class="w-full h-full object-cover">
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-4 align-top max-w-xs">
+                                                <p class="text-sm text-slate-600 line-clamp-2"
+                                                   x-text="isSubscribed ? enquiry.message : 'Subscribe to view user message details. Hidden content.'"
+                                                   :class="isSubscribed ? '' : 'blur-[4px] select-none opacity-50'"></p>
+                                            </td>
+                                            <td class="px-4 py-4 align-top text-right">
+                                                <button x-show="isSubscribed" @click="openReplyModal(enquiry)" class="stripe-btn-outline text-xs px-4 py-2">
+                                                    Reply
+                                                </button>
+                                                <button x-show="!isSubscribed" disabled class="bg-slate-100 text-slate-400 font-semibold text-xs px-4 py-2 rounded-full cursor-not-allowed inline-flex items-center gap-1">
+                                                    <i class="bi bi-lock-fill"></i> Locked
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="enquiries.length === 0">
+                                        <td colspan="4" class="text-center py-10 text-slate-500 text-sm">Loading enquiries or no active enquiries found.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Reply Modal -->
+                        <div x-show="openReply" x-cloak
+                             class="fixed inset-0 z-[1500] flex items-center justify-center p-4 bg-dark/40 backdrop-blur-sm"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0"
+                             x-transition:enter-end="opacity-100">
+
+                            <div @click.away="openReply = false" class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
+                                
+                                <div class="bg-light px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                                    <h4 class="font-bold text-dark flex items-center gap-2">
+                                        <i class="bi bi-reply text-primary"></i> Enquiry Response
+                                    </h4>
+                                    <button @click="openReply = false" class="text-slate-400 hover:text-dark transition-colors">
+                                        <i class="bi bi-x-lg text-lg"></i>
+                                    </button>
+                                </div>
+
+                                <div class="p-6 overflow-y-auto">
+                                    <h5 class="font-bold text-dark text-lg mb-4" x-text="currentTitle"></h5>
+                                    
+                                    <div class="bg-light rounded-xl p-4 border border-slate-200 mb-6 space-y-3">
+                                        <div class="flex flex-col md:flex-row justify-between md:items-center gap-2 font-medium">
+                                            <div>
+                                                <span class="text-xs text-slate-500 block mb-1">Lead Name</span>
+                                                <span class="text-sm text-dark" x-text="currentName"></span>
+                                            </div>
+                                            <div class="md:text-right">
+                                                <span class="text-xs text-slate-500 block mb-1">Email Address</span>
+                                                <span class="text-sm text-primary" x-text="currentEmail"></span>
+                                            </div>
+                                        </div>
+                                        <hr class="border-slate-200 my-2">
+                                        <div>
+                                            <span class="text-xs text-slate-500 block mb-1">Message</span>
+                                            <p class="text-sm text-dark italic" x-text="currentMsg"></p>
+                                        </div>
+                                    </div>
+
+                                    <form @submit.prevent="
+                                        isSending = true;
+                                        const params = new URLSearchParams();
+                                        params.append('enquiryId', currentId);
+                                        params.append('message', replyText);
+
+                                        fetch('/api/save/agentreplies', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                            body: params
+                                        })
+                                        .then(res => res.text())
+                                        .then(data => {
+                                            if(data === 'success') {
+                                                successMsg = 'Reply sent successfully!';
+                                                replyText = '';
+                                                setTimeout(() => { successMsg = ''; }, 3000);
+                                            } else {
+                                                successMsg = 'Something went wrong!';
+                                                setTimeout(() => { successMsg = ''; }, 3000);
+                                            }
+                                        })
+                                        .finally(() => isSending = false);
+                                    ">
+                                        <label class="block text-sm font-semibold text-dark mb-2">Your Reply</label>
+                                        <textarea x-model="replyText" rows="4" required
+                                                  class="stripe-input mb-4"
+                                                  placeholder="Write your response carefully..."></textarea>
+                                        
+                                        <div x-show="successMsg" x-transition class="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm font-semibold border border-green-200 text-center">
+                                            <span x-text="successMsg"></span>
+                                        </div>
+
+                                        <div class="flex justify-end gap-3 mt-4">
+                                            <button type="button" @click="openReply = false" class="stripe-btn-outline px-6 py-2">
+                                                Close
+                                            </button>
+                                            <button type="submit" :disabled="isSending" class="stripe-btn px-6 py-2" :class="isSending ? 'opacity-70 cursor-wait' : ''">
+                                                <span x-show="!isSending">Send Reply</span>
+                                                <span x-show="isSending"><i class="bi bi-hourglass-split"></i> Sending...</span>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-light pt-20 pb-10 border-t border-slate-200 mt-auto">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="md:col-span-1">
+                    <a th:href="@{/}" class="flex items-center gap-2 mb-4 no-underline">
+                        <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md text-sm">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+                    </a>
+                    <p class="text-slate-500 text-sm leading-relaxed mb-6">
+                        The modern infrastructure for global real estate. Seamless, secure, and sophisticated.
+                    </p>
+                    <div class="flex gap-4">
+                        <a aria-label="Twitter" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-twitter-x"></i></a>
+                        <a aria-label="Linkedin" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+
+                <div>
+                    <h5 class="text-dark font-bold mb-6">Platform</h5>
+                    <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                        <li><a aria-label="All Properties" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-grid"></i> All Properties</a></li>
+                        <li><a aria-label="Property Search" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-search"></i> Property Search</a></li>
+                        <li><a aria-label="Agent Directory" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-people"></i> Agent Directory</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h5 class="text-dark font-bold mb-6">Company</h5>
+                    <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                        <li><a href="#" class="hover:text-primary transition-colors no-underline text-slate-500">About Us</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Contact Support</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Terms of Service</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h5 class="text-dark font-bold mb-6">Support</h5>
+                    <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                        <li><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Assistance</p></li>
+                        <li><a href="mailto:support@elitenest.com" class="text-primary font-bold no-underline">support@elitenest.com</a></li>
+                        <li class="pt-4"><span class="bg-indigo-50 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-indigo-100 italic">Premier Real Estate</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
+                <p>&copy; 2026 EliteNest Inc. All rights reserved.</p>
+                <p class="flex items-center gap-1"><i class="bi bi-shield-check text-emerald-500"></i> Secure & Verified Platform</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Alpine Dashboard Component Logic (Kept fully intact) -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        function agentComponent() {
+            return {
+                isSubscribed: false,
+                selectedPlan: 'ONE_MONTH',
+                enquiries: [],
+                openReply: false,
+                currentId: null,
+                currentTitle: '',
+                currentName: '',
+                currentEmail: '',
+                currentMsg: '',
+                replyText: '',
+                isSending: false,
+                successMsg: '',
+                init() {
+                    fetch('/agent/subscription/status')
+                        .then(res => res.json())
+                        .then(status => this.isSubscribed = !!status)
+                        .catch(() => this.isSubscribed = false);
+                    fetch('/api/agent/enquiries')
+                        .then(res => res.json())
+                        .then(data => this.enquiries = data)
+                        .catch(() => this.enquiries = []);
+                },
+                openReplyModal(enquiry) {
+                    if (!this.isSubscribed) return;
+                    if (!enquiry) return;
+                    this.openReply = true;
+                    this.currentId = enquiry.id;
+                    this.currentTitle = enquiry.property.title;
+                    this.currentName = enquiry.name;
+                    this.currentEmail = enquiry.email;
+                    this.currentMsg = enquiry.message;
+                },
+                payNow() {
+                    fetch('/agent/createOrder/' + this.selectedPlan)
+                        .then(res => res.json())
+                        .then(order => {
+                            const rzp = new Razorpay({
+                                key: 'rzp_test_RuvUbr2zSaWSnW',
+                                amount: order.amount,
+                                currency: 'INR',
+                                order_id: order.id,
+                                name: 'Elite Estates',
+                                handler: (response) => {
+                                    fetch('/agent/payment/success', {
+                                        method: 'POST',
+                                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                                        body: new URLSearchParams({
+                                            razorpayPaymentId: response.razorpay_payment_id,
+                                            razorpayOrderId: response.razorpay_order_id,
+                                            razorpaySignature: response.razorpay_signature,
+                                            plan: this.selectedPlan
+                                        })
+                                    })
+                                    .then(res => res.text())
+                                    .then(data => {
+                                        if (data === 'success') {
+                                            this.isSubscribed = true;
+                                            location.reload(); 
+                                        }
+                                    });
+                                }
+                            });
+                            rzp.open();
+                        });
+                }
+            }
+        }
+    </script>
+</body>
+</html>

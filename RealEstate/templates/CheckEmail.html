@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Your Email | EliteNest</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#635bff',
+                        'primary-hover': '#5851eb',
+                        dark: '#0a2540',
+                        light: '#f6f9fc',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #f6f9fc; color: #425466; font-family: 'Inter', sans-serif; }
+        [x-cloak] { display: none !important; }
+        .premium-card { background: white; border-radius: 2.5rem; border: 1px solid #e2e8f0; box-shadow: 0 50px 100px -20px rgba(10, 37, 64, 0.05); }
+        .icon-circle { width: 80px; height: 80px; border-radius: 100%; display: flex; align-items: center; justify-content: center; margin: 0 auto; background: #eef2ff; color: #635bff; }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-6 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-50 via-white to-slate-50"
+      x-data="{ scrolled: false }"
+      @scroll.window="scrolled = (window.pageYOffset > 20)">
+
+    <header :class="scrolled ? 'glass-nav shadow-sm py-3' : 'bg-transparent py-5'" 
+            class="fixed w-full top-0 z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 w-full flex justify-between items-center">
+            <a th:href="@{/}" class="flex items-center gap-2 group">
+                <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md">
+                    <i class="bi bi-building"></i>
+                </div>
+                <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+            </a>
+        </div>
+    </header>
+
+    <div class="w-full max-w-md animate-fade-in-up mt-20">
+
+        <div class="premium-card p-10 md:p-14 text-center">
+            <div th:if="${param.error}" class="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-2xl mb-8 flex items-center gap-3 text-sm font-bold" role="alert">
+                <i class="bi bi-exclamation-circle-fill flex-shrink-0"></i>
+                <span>Please verify your email address to login.</span>
+            </div>
+
+            <div class="icon-circle mb-8 animate-pulse">
+                <i class="bi bi-envelope-check text-4xl"></i>
+            </div>
+
+            <div class="mb-8">
+                <span class="bg-indigo-50 text-primary px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest mb-4 inline-block italic border border-indigo-100">Verification</span>
+                <h2 class="text-3xl font-extrabold text-dark tracking-tight mb-4">Check Your Email</h2>
+                <p class="text-slate-500 font-medium leading-relaxed">
+                    We've sent a verification link to your email address. Please check your inbox and follow the instructions.
+                </p>
+            </div>
+
+            <a th:href="@{/api/login}" class="stripe-btn w-full mb-8 no-underline block">
+                Back to Login
+            </a>
+
+            <div class="pt-8 border-t border-slate-100">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Didn't receive it?</p>
+                <input type="hidden" id="userEmail" th:value="${email}" />
+                
+                <p id="countdownText" class="text-primary text-xs font-bold transition-all duration-300">
+                    Resend available in <span id="timer" class="inline-block min-w-[20px]">60</span>s
+                </p>
+
+                <button id="resendBtn" 
+                        type="button" 
+                        onclick="resendLink()"
+                        class="text-xs font-bold text-slate-300 cursor-not-allowed uppercase tracking-wider transition-colors"
+                        disabled>
+                    Resend Verification Link
+                </button>
+
+                <p id="resendMessage" class="text-emerald-500 text-[10px] font-bold mt-4"></p>
+            </div>
+        </div>
+        
+    </div>
+
+<script>
+    let timeLeft = 60;
+    let countdown;
+
+    const resendBtn = document.getElementById("resendBtn");
+    const countdownText = document.getElementById("countdownText");
+    const timerElement = document.getElementById("timer");
+
+    function startTimer() {
+        countdown = setInterval(() => {
+            timeLeft--;
+            if (timerElement) timerElement.innerText = timeLeft;
+
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                countdownText.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => {
+                    countdownText.style.display = 'none';
+                    resendBtn.disabled = false;
+                    resendBtn.classList.remove("text-slate-300", "cursor-not-allowed");
+                    resendBtn.classList.add("text-primary", "hover:text-primary-hover");
+                }, 300);
+            }
+        }, 1000);
+    }
+
+    startTimer();
+
+    function resendLink() {
+        const email = document.getElementById("userEmail").value;
+        const msg = document.getElementById("resendMessage");
+        
+        msg.innerText = "Processing...";
+
+        fetch('/resend-verification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'email=' + encodeURIComponent(email)
+        })
+        .then(response => response.text())
+        .then(data => {
+            msg.innerText = data;
+            clearInterval(countdown);
+            timeLeft = 60;
+            resendBtn.disabled = true;
+            resendBtn.classList.remove("text-primary", "hover:text-primary-hover");
+            resendBtn.classList.add("text-slate-300", "cursor-not-allowed");
+            
+            countdownText.style.display = 'block';
+            countdownText.classList.remove('opacity-0', 'scale-95');
+            timerElement.innerText = timeLeft;
+            startTimer();
+        })
+        .catch(() => {
+            msg.innerText = "Request failed. Please try again later.";
+        });
+    }
+</script>
+
+</body>
+</html>

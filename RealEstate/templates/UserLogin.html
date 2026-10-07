@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | EliteNest</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#635bff',
+                        'primary-hover': '#5851eb',
+                        dark: '#0a2540',
+                        light: '#f6f9fc',
+                        slate: {
+                            400: '#8792a2',
+                            500: '#425466',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- global CSS -->
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+
+    <style>
+        [x-cloak] { display: none !important; }
+        .login-card { animation: fadeInScale 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .stripe-input {
+            width: 100%; height: 3.5rem; padding-left: 1.25rem; padding-right: 1.25rem;
+            background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem;
+            outline: none; transition: all 0.2s; font-size: 0.875rem; color: #0a2540;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .stripe-input:focus { 
+            border-color: #635bff; box-shadow: 0 0 0 4px rgba(99, 91, 255, 0.1); 
+        }
+        .toggle-btn-pos { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); }
+    </style>
+</head>
+<body class="bg-light text-slate-500 antialiased font-sans" 
+      x-data="{ 
+        scrolled: false,
+        hasError: new URLSearchParams(window.location.search).has('error'),
+        hasSuccess: new URLSearchParams(window.location.search).has('success'),
+        hasErrors: new URLSearchParams(window.location.search).has('errors'),
+        hasErrorItem: new URLSearchParams(window.location.search).has('erroritem')
+      }"
+      @scroll.window="scrolled = (window.pageYOffset > 20)">
+
+<header :class="scrolled ? 'glass-nav shadow-sm py-3' : 'bg-transparent py-5'" 
+        class="fixed w-full z-50 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 w-full flex justify-between items-center">
+        <a th:href="@{/}" class="flex items-center gap-2 group">
+            <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md">
+                <i class="bi bi-building"></i>
+            </div>
+            <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+        </a>
+    </div>
+</header>
+
+<main class="min-h-screen grid lg:grid-cols-2 pt-20 overflow-hidden">
+    <!-- Left Column: Login Form -->
+    <div class="flex items-center justify-center p-8 md:p-16 relative">
+        <!-- Decorative background elements -->
+        <div class="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-indigo-100 rounded-full blur-[100px] opacity-70 -z-10"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-indigo-50 rounded-full blur-[100px] opacity-70 -z-10"></div>
+
+        <div class="w-full max-w-md z-10">
+            <div class="login-card" :class="(hasError || hasErrors || hasErrorItem) ? 'shake' : ''">
+
+                <div class="mb-10 text-center lg:text-left">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 text-primary rounded-full text-[10px] font-bold uppercase tracking-widest mb-4">
+                        <i class="bi bi-shield-lock-fill"></i> Secure Access
+                    </div>
+                    <h2 class="text-3xl font-extrabold text-dark tracking-tight mb-2">Welcome Back</h2>
+                    <p class="text-slate-500 font-medium text-sm">Sign in to your account to continue your journey.</p>
+                </div>
+
+                <!-- Alerts -->
+                <div th:if="${param.success}" x-show="hasSuccess" x-cloak class="mb-6 p-4 bg-green-50 rounded-xl border border-green-100 flex items-start gap-3">
+                    <i class="bi bi-check-circle-fill text-green-500 mt-0.5"></i>
+                    <div class="flex-grow">
+                        <p class="text-sm font-bold text-green-800">Successfully Registered!</p>
+                        <p class="text-xs text-green-600 mt-0.5">You can now sign in to your account.</p>
+                    </div>
+                    <button type="button" @click="hasSuccess = false" class="text-green-400 hover:text-green-600"><i class="bi bi-x"></i></button>
+                </div>
+
+                <div th:if="${param.errors}" x-show="hasErrors" x-cloak class="mb-6 p-4 bg-amber-50 rounded-xl border border-amber-100 flex items-start gap-3">
+                    <i class="bi bi-exclamation-triangle-fill text-amber-500 mt-0.5"></i>
+                    <div class="flex-grow">
+                        <p class="text-sm font-bold text-amber-800">Authentication Required</p>
+                        <p class="text-xs text-amber-600 mt-0.5">Please sign in to view agent replies.</p>
+                    </div>
+                    <button type="button" @click="hasErrors = false" class="text-amber-400 hover:text-amber-600"><i class="bi bi-x"></i></button>
+                </div>
+
+                <div th:if="${param.erroritem}" x-show="hasErrorItem" x-cloak class="mb-6 p-4 bg-red-50 rounded-xl border border-red-100 flex items-start gap-3">
+                    <i class="bi bi-exclamation-circle-fill text-red-500 mt-0.5"></i>
+                    <div class="flex-grow">
+                        <p class="text-sm font-bold text-red-800">Action Blocked</p>
+                        <p class="text-xs text-red-600 mt-0.5">Please sign in to send an enquiry.</p>
+                    </div>
+                    <button type="button" @click="hasErrorItem = false" class="text-red-400 hover:text-red-600"><i class="bi bi-x"></i></button>
+                </div>
+
+                <form th:action="@{/api/user/login}" method="post" class="space-y-6">
+                    
+                    <div th:if="${param.error}" x-show="hasError" x-cloak class="mb-4 p-4 bg-red-50 rounded-xl border border-red-100 flex items-start gap-3">
+                        <i class="bi bi-x-circle-fill text-red-500 mt-0.5"></i>
+                        <div class="flex-grow">
+                            <p class="text-sm font-bold text-red-800">Sign In Failed</p>
+                            <p class="text-xs text-red-600 mt-0.5">Invalid email or password.</p>
+                        </div>
+                        <button type="button" @click="hasError = false" class="text-red-400 hover:text-red-600"><i class="bi bi-x"></i></button>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Email Address</label>
+                        <input type="email" name="email" required
+                               @input="hasError = false"
+                               class="stripe-input"
+                               placeholder="name@company.com">
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center ml-1">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500">Password</label>
+                            <a href="#" class="text-xs font-bold text-primary hover:text-primary-hover">Forgot password?</a>
+                        </div>
+                        <div class="relative">
+                            <input type="password" id="password" name="password" required
+                                   @input="hasError = false"
+                                   class="stripe-input pr-12"
+                                   placeholder="••••••••">
+                            <button aria-label="Toggle Password Visibility" class="toggle-btn-pos text-slate-400 hover:text-primary transition-colors focus:outline-none" type="button" id="togglePassword">
+                                <i class="bi bi-eye-slash" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="stripe-btn w-full mt-2 !py-4 shadow-md flex justify-center items-center gap-2">
+                        <span>Sign In</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+                </form>
+
+                <div class="mt-10 text-center border-t border-slate-100 pt-8">
+                    <p class="text-sm text-slate-500 font-medium">
+                        Don't have an account?
+                        <a th:href="@{/api/allsignup}" class="text-primary font-bold hover:underline decoration-primary/30 underline-offset-4 ml-1 italic">Create Account</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Decorative Image Panel -->
+    <div class="hidden lg:block relative bg-dark overflow-hidden">
+        <!-- Main Background Image -->
+        <img aria-label="Luxury Penthouse View" th:src="@{/images/login-bg.png}" 
+             class="absolute inset-0 w-full h-full object-cover">
+        
+        <!-- Gradient Overlays for Depth -->
+        <div class="absolute inset-0 bg-gradient-to-tr from-dark/90 via-dark/40 to-transparent"></div>
+        <div class="absolute inset-0 bg-primary/10 mix-blend-overlay"></div>
+
+        <!-- Floating Content -->
+        <div class="absolute bottom-20 left-16 right-16 text-white">
+            <div class="mb-6 inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-[10px] font-bold uppercase tracking-[0.2em]">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Elevated Living
+            </div>
+            <h2 class="text-4xl font-extrabold mb-4 tracking-tight leading-tight text-white">Your gateway to the world's most <span class="text-primary">exceptional</span> properties.</h2>
+            <p class="text-slate-300 font-medium leading-relaxed max-w-md ">Experience a personalized real estate journey powered by deep market insights and curated collections.</p>
+            
+            <div class="mt-10 flex gap-12">
+                <div>
+                    <p class="text-3xl font-bold">12k+</p>
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Prime Listings</p>
+                </div>
+                <div>
+                    <p class="text-3xl font-bold">500+</p>
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Expert Agents</p>
+                </div>
+                <div>
+                    <p class="text-3xl font-bold">99.9%</p>
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Verified Deals</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- <footer class="bg-white py-8 border-t border-slate-100 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
+        <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">EN</div>
+            <p>&copy; 2026 EliteNest Inc. All rights reserved.</p>
+        </div>
+        <div class="flex gap-6 font-medium">
+            <a href="#" class="hover:text-primary transition-colors text-slate-500">Privacy Policy</a>
+            <a href="#" class="hover:text-primary transition-colors text-slate-500">Terms of Service</a>
+            <a href="#" class="hover:text-primary transition-colors text-slate-500">Help Center</a>
+        </div>
+        <p class="flex items-center gap-1"><i class="bi bi-shield-check text-emerald-500"></i> Secure & Verified Platform</p>
+    </div>
+</footer> -->
+<script>
+    (function () {
+      const toggleBtn = document.getElementById('togglePassword');
+      const passwordInput = document.getElementById('password');
+      const toggleIcon = document.getElementById('toggleIcon');
+      if (!toggleBtn || !passwordInput || !toggleIcon) return;
+      toggleBtn.addEventListener('click', function () {
+        const isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+        toggleIcon.classList.toggle('bi-eye');
+        toggleIcon.classList.toggle('bi-eye-slash');
+      });
+    })();
+</script>
+</body>
+</html>

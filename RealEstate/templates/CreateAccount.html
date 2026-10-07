@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | EliteNest</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#635bff',
+                        'primary-hover': '#5851eb',
+                        dark: '#0a2540',
+                        light: '#f6f9fc',
+                        slate: {
+                            400: '#8792a2',
+                            500: '#425466',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- global CSS -->
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        .role-card {
+            padding: 1.5rem; background: white; border: 1px solid #e2e8f0; border-radius: 1rem; 
+            cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); display: flex; 
+            align-items: center; gap: 1rem; text-align: left; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .role-card:hover { border-color: #635bff; box-shadow: 0 4px 12px rgba(99, 91, 255, 0.1); transform: translateY(-2px); }
+        .role-icon { width: 3rem; height: 3rem; border-radius: 0.75rem; background: #f6f9fc; color: #425466; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: all 0.2s; }
+        .role-card:hover .role-icon { background: #635bff; color: white; }
+    </style>
+</head>
+<body class="bg-light text-slate-500 antialiased font-sans flex flex-col min-h-screen">
+
+<header class="h-20 w-full bg-light/80 backdrop-blur-md flex items-center px-6 transition-all duration-300 z-50">
+    <div class="max-w-7xl mx-auto w-full flex justify-between items-center">
+        <a th:href="@{/}" class="flex items-center gap-2 group">
+            <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md">
+                <i class="bi bi-building"></i>
+            </div>
+            <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+        </a>
+        <!-- <a th:href="@{/login}" class="text-sm font-semibold text-primary hover:text-primary-hover transition-colors">Sign In</a> -->
+    </div>
+</header>
+
+<main class="flex-grow flex items-center justify-center px-4 py-12 relative overflow-hidden">
+    <!-- Decorative background elements -->
+    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-100 rounded-full blur-[100px] opacity-70 -z-10"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-50 rounded-full blur-[100px] opacity-70 -z-10"></div>
+
+    <div class="w-full max-w-xl z-10">
+        <div class="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-slate-200">
+            
+            <div class="mb-10 text-center">
+                <h1 class="text-3xl font-bold text-dark tracking-tight mb-3">Join <span class="text-primary">EliteNest</span></h1>
+                <p class="text-slate-500">Select how you want to use the platform to continue.</p>
+            </div>
+
+            <div class="space-y-4">
+                
+                <a th:href="@{/api/signup}" class="block group">
+                    <div class="role-card">
+                        <div class="role-icon">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-dark text-lg">I'm a Buyer / Tenant</h3>
+                            <p class="text-sm text-slate-500 mt-0.5">Looking for my next dream home</p>
+                        </div>
+                        <i class="bi bi-chevron-right ml-auto text-slate-300 group-hover:text-primary transition-colors"></i>
+                    </div>
+                </a>
+
+                <a th:href="@{/api/owner/signup}" class="block group">
+                    <div class="role-card">
+                        <div class="role-icon">
+                            <i class="bi bi-house"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-dark text-lg">I'm a Property Owner</h3>
+                            <p class="text-sm text-slate-500 mt-0.5">Selling or renting out my property</p>
+                        </div>
+                        <i class="bi bi-chevron-right ml-auto text-slate-300 group-hover:text-primary transition-colors"></i>
+                    </div>
+                </a>
+
+                <a th:href="@{/api/agent/showsignup}" class="block group">
+                    <div class="role-card">
+                        <div class="role-icon">
+                            <i class="bi bi-briefcase"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-dark text-lg">I'm an Agent / Agency</h3>
+                            <p class="text-sm text-slate-500 mt-0.5">Listing properties for clients</p>
+                        </div>
+                        <i class="bi bi-chevron-right ml-auto text-slate-300 group-hover:text-primary transition-colors"></i>
+                    </div>
+                </a>
+
+            </div>
+            
+            <div class="mt-10 pt-6 border-t border-slate-100 text-center">
+                <p class="text-sm text-slate-500">
+                    Already have an account? <a th:href="@{/api/login}" class="text-primary font-semibold hover:underline decoration-primary/30 underline-offset-4 ml-1">Sign In</a>
+                </p>
+            </div>
+            
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

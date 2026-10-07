@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Hub | EliteNest</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#635bff',
+                        'primary-hover': '#5851eb',
+                        dark: '#0a2540',
+                        light: '#f6f9fc',
+                        slate: {
+                            400: '#8792a2',
+                            500: '#425466',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- global CSS -->
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+
+    <style>
+        [x-cloak] { display: none !important; }
+
+        .sold-ribbon {
+            position: absolute;
+            top: 24px;
+            right: -40px;
+            background: #ef4444;
+            color: white;
+            padding: 6px 45px;
+            transform: rotate(45deg);
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 20;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .status-tab {
+            transition: all 0.2s ease;
+        }
+        .status-tab.active-tab {
+            background-color: white;
+            color: #0a2540;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-light text-slate-500 antialiased font-sans overflow-x-hidden min-h-screen flex flex-col"
+      x-data="{
+          profileMenu: false,
+          mobileMenu: false,
+          scrolled: false
+      }"
+      @scroll.window="scrolled = (window.pageYOffset > 20)"
+      x-init="filterStatus('ACTIVE')">
+
+<header :class="scrolled ? 'glass-nav shadow-sm py-3' : 'bg-transparent py-5'" class="fixed top-0 w-full z-[1000] transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 flex justify-between items-center">
+        
+        <!-- Logo -->
+        <a th:href="@{/owner/homepage}" class="flex items-center gap-2 group border-none no-underline">
+            <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md">
+                <i class="bi bi-building"></i>
+            </div>
+            <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+        </a>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden select-none lg:flex items-center gap-8 font-medium text-sm text-slate-500">
+            <a th:href="@{/api/owner/showAgent}" class="hover:text-primary transition-colors flex items-center gap-2">
+                <i class="bi bi-people"></i> Find Agent
+            </a>
+            <a th:href="@{/api/save/property}" class="hover:text-primary transition-colors flex items-center gap-2">
+                <i class="bi bi-plus-circle"></i> Post Property
+            </a>
+            <a th:href="@{/api/newProject}" class="hover:text-primary transition-colors flex items-center gap-2">
+                <i class="bi bi-building-add"></i> Post Project
+            </a>
+            <a th:href="@{/api/myProperty}" class="text-primary font-bold transition-colors flex items-center gap-2">
+                <i class="bi bi-grid-fill"></i> My Properties
+            </a>
+        </nav>
+
+        <!-- Profile Menu -->
+        <div class="hidden lg:flex items-center gap-4 relative" @click.away="profileMenu = false">
+            <button th:if="${owner != null}" @click="profileMenu = !profileMenu" class="flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none">
+                <div class="text-right">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">Owner Portal</p>
+                    <p class="text-sm font-bold text-dark leading-none mt-1" th:text="${owner.name}">Account</p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-md border border-primary/20">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+            </button>
+
+            <!-- Profile Dropdown -->
+            <div x-show="profileMenu" x-cloak x-transition
+                 class="absolute top-full right-0 mt-3 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-[1100]">
+                <div class="p-4 bg-slate-50 border-b border-slate-100">
+                    <p class="text-xs font-semibold text-slate-500 mb-1">Welcome back,</p>
+                    <p class="text-sm font-bold text-dark" th:text="${owner != null ? owner.name : ''}">Owner Name</p>
+                </div>
+                <div class="p-2">
+                    <a th:href="@{/api/login}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 transition-colors text-sm font-medium">
+                        <i class="bi bi-shield-lock"></i> Login
+                    </a>
+                    <a th:href="@{/api/save/editownerprofile}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 transition-colors text-sm font-medium">
+                        <i class="bi bi-sliders2"></i> Edit Profile
+                    </a>
+                    <div class="border-t border-slate-100 mt-2 pt-2">
+                        <a th:href="@{/api/logout}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-red-50 text-red-600 transition-colors text-sm font-bold">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Mobile Menu Toggle -->
+        <button aria-label="Toggle Menu" class="lg:hidden text-dark text-2xl" @click="mobileMenu = !mobileMenu">
+            <i class="bi" :class="mobileMenu ? 'bi-x' : 'bi-list'"></i>
+        </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div x-show="mobileMenu" x-transition.opacity class="absolute top-full left-0 w-full bg-white shadow-xl border-t border-slate-100 flex flex-col lg:hidden py-4 px-6 gap-4 z-[1000]">
+        
+        <div class="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Owner Portal</p>
+            <p class="text-sm font-bold text-dark leading-none" th:text="${owner != null ? owner.name : 'Guest'}">Owner Name</p>
+        </div>
+
+        <a th:href="@{/}" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3 p-2">
+            <i class="bi bi-people text-lg"></i> Find Agent
+        </a>
+        <a th:href="@{/api/save/property}" @click="mobileMenu = false" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3 p-2">
+            <i class="bi bi-plus-circle text-lg"></i> Post Property
+        </a>
+        <a th:href="@{/api/newProject}" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3 p-2">
+            <i class="bi bi-building-add text-lg"></i> Post New Project
+        </a>
+        <a th:href="@{/api/myProperty}" class="font-bold text-primary flex items-center gap-3 p-2">
+            <i class="bi bi-grid-fill text-lg"></i> My Portfolio
+        </a>
+
+        <hr class="border-slate-100 my-2">
+        
+        <a th:href="@{/api/login}" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3 p-2">
+            <i class="bi bi-box-arrow-in-right text-lg"></i> Login
+        </a>
+        <a th:href="@{/api/allsignup}" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3 p-2">
+            <i class="bi bi-person-plus text-lg"></i> Sign Up
+        </a>
+        <a th:href="@{/api/logout}" class="font-bold text-red-600 hover:text-red-700 flex items-center gap-3 p-2 mt-2">
+            <i class="bi bi-box-arrow-right text-lg"></i> Logout
+        </a>
+    </div>
+</header>
+
+<main class="flex-grow max-w-7xl mx-auto px-6 lg:px-8 pt-32 pb-20 w-full">
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+        <div class="md:col-span-2">
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 text-primary rounded-full text-[10px] font-bold uppercase tracking-widest mb-3">
+                <i class="bi bi-grid-1x2"></i> Asset Management
+            </div>
+            <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-dark">Portfolio <span class="text-primary italic font-serif">Hub</span></h2>
+            <p class="text-slate-500 mt-2 font-medium">Monitoring your luxury assets and project developments.</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-5">
+            <div class="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center text-xl shadow-inner border border-green-100">
+                <i class="bi bi-broadcast"></i>
+            </div>
+            <div>
+                <p class="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">Active</p>
+                <p class="text-3xl font-extrabold text-dark leading-none" th:text="${activeCount}">0</p>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5">
+            <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center text-xl shadow-inner border border-slate-200">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div>
+                <p class="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">Sold</p>
+                <p class="text-3xl font-extrabold text-dark leading-none" th:text="${SoldCount}">0</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtering Tabs -->
+    <div class="flex justify-start md:justify-end mb-8 overflow-x-auto pb-2">
+        <div class="bg-slate-200/50 p-1.5 rounded-xl flex gap-1 inline-flex">
+            <button onclick="filterStatus('ACTIVE'); setActiveTab(this)"
+                    class="status-tab active-tab px-5 py-2 rounded-lg text-sm font-bold text-dark whitespace-nowrap">
+                Active Listings
+            </button>
+
+            <button onclick="filterStatus('NEW'); setActiveTab(this)"
+                    class="status-tab px-5 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-dark whitespace-nowrap">
+                New Projects
+            </button>
+
+            <button onclick="filterStatus('SOLD'); setActiveTab(this)"
+                    class="status-tab px-5 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-dark whitespace-nowrap">
+                Sold / Historical
+            </button>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="noResult" class="hidden bg-white border-2 border-dashed border-slate-200 rounded-2xl py-24 text-center">
+        <div class="w-20 h-20 mx-auto bg-slate-50 rounded-full flex items-center justify-center text-slate-300 text-4xl mb-4">
+            <i class="bi bi-search"></i>
+        </div>
+        <h3 class="text-xl font-bold text-dark mb-2">No Properties Found</h3>
+        <p class="text-slate-500 font-medium">There are currently no properties in this view.</p>
+        <div class="mt-8 flex gap-4 justify-center">
+            <a th:href="@{/api/save/property}" class="stripe-btn px-6 py-2.5 text-sm">Post Property</a>
+        </div>
+    </div>
+
+    <!-- Regular Properties Grid -->
+    <div id="propertyGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div th:each="property : ${myProperty}"
+             th:data-status="${property.status}"
+             class="stripe-card group bg-white flex flex-col relative overflow-hidden">
+
+            <div class="relative h-60 overflow-hidden rounded-t-xl group">
+                <div th:if="${property.status == 'SOLD'}" class="sold-ribbon">Sold</div>
+
+                <img aria-label="Property Image" th:src="@{'/api/images/' + ${property.id}}"
+                     th:classappend="${property.status == 'SOLD'} ? 'grayscale opacity-75' : ''"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+
+                <div class="absolute inset-0 bg-gradient-to-t from-dark/70 via-transparent to-transparent"></div>
+
+                <!-- Price Tag -->
+                <div class="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-sm">
+                    <p class="text-[9px] uppercase font-bold text-slate-500 tracking-wider mb-0.5" th:if="${property.status != 'SOLD'}">Asking Price</p>
+                    <p class="text-[9px] uppercase font-bold text-slate-500 tracking-wider mb-0.5" th:if="${property.status == 'SOLD'}">Sold Price</p>
+                    <p class="text-sm font-bold text-dark">
+                        INR <span th:text="${#numbers.formatDecimal(property.price, 0, 'COMMA', 0, 'POINT')}">0</span>
+                    </p>
+                </div>
+
+                <!-- Hover Actions -->
+                <div class="absolute inset-0 bg-dark/40 opacity-0 group-hover:opacity-100 backdrop-blur-[2px] transition-all duration-300 flex items-center justify-center gap-3 z-30">
+                    <th:block th:if="${property.status == 'SOLD'}">
+                        <a th:href="@{/api/view/sold/{pid}/{type}(pid=${property.id},type='property')}"
+                           class="w-10 h-10 bg-white text-dark rounded-full flex items-center justify-center shadow-lg hover:bg-primary hover:text-white transition-all transform hover:scale-110 tooltip">
+                            <i class="bi bi-eye-fill"></i>
+                        </a>
+                    </th:block>
+
+                    <th:block th:unless="${property.status == 'SOLD'}">
+                        <a th:href="@{/api/edit/{id}(id=${property.id})}"
+                           class="w-10 h-10 bg-white text-dark rounded-full flex items-center justify-center shadow-lg hover:bg-primary hover:text-white transition-all transform hover:scale-110">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a th:href="@{/api/delete/{ids}(ids=${property.id})}"
+                           class="w-10 h-10 bg-white text-red-500 rounded-full flex items-center justify-center shadow-lg hover:bg-red-500 hover:text-white transition-all transform hover:scale-110">
+                            <i class="bi bi-trash3"></i>
+                        </a>
+                    </th:block>
+                </div>
+            </div>
+
+            <div class="p-6 flex-grow flex flex-col">
+                <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-4">
+                    <h3 class="text-lg font-bold text-dark group-hover:text-primary transition-colors truncate pr-2" th:text="${property.title}">Property Title</h3>
+                    
+                    <div th:if="${property.status == 'ACTIVE'}" class="flex items-center gap-1.5 bg-indigo-50 text-primary px-2 py-1 rounded-md flex-shrink-0">
+                        <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                        <p class="text-[9px] font-bold uppercase tracking-wider">Active</p>
+                    </div>
+                    <div th:if="${property.status == 'SOLD'}" class="flex items-center gap-1.5 bg-slate-100 text-slate-500 px-2 py-1 rounded-md flex-shrink-0">
+                        <i class="bi bi-check-circle-fill text-[9px]"></i>
+                        <p class="text-[9px] font-bold uppercase tracking-wider">Sold</p>
+                    </div>
+                </div>
+
+                <p class="text-xs text-slate-500 flex items-center mb-6 pt-2 font-medium truncate">
+                    <i class="bi bi-geo-alt-fill text-primary mr-2"></i>
+                    <span th:text="${property.location}">Location</span>
+                </p>
+
+                <div class="mt-auto grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+                    <div>
+                        <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Specs</p>
+                        <p class="text-sm font-semibold text-dark"><span th:text="${property.bhk}"></span> BHK <span th:text="${property.propertyType}"></span></p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Leads / Views</p>
+                        <p class="text-sm font-semibold text-dark flex items-center gap-2">
+                             <i class="bi bi-envelope text-primary text-xs"></i> 0 Enquiries
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Projects Grid -->
+    <div id="newProjectGrid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div th:each="project : ${newProjectList}"
+             class="stripe-card group bg-white flex flex-col relative overflow-hidden">
+
+            <div class="relative h-60 overflow-hidden rounded-t-xl group">
+                <img th:src="@{/api/project-image/{id}(id=${project.id})}"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                     alt="Project Image"/>
+                     
+                <div th:unless="${project.image != null}"
+                     class="w-full h-full bg-slate-100 flex items-center justify-center">
+                    <i class="bi bi-building text-slate-300 text-6xl"></i>
+                </div>
+
+                <div class="absolute inset-0 bg-gradient-to-t from-dark/80 via-transparent to-transparent"></div>
+
+                <div class="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-sm">
+                    <p class="text-[9px] uppercase font-bold text-slate-500 tracking-wider mb-0.5">Starting From</p>
+                    <p class="text-sm font-bold text-dark">
+                        INR <span th:text="${#numbers.formatDecimal(project.startingPrice, 0, 'COMMA', 0, 'POINT')}">0</span>
+                    </p>
+                </div>
+
+                <!-- Status Badge -->
+                <div class="absolute top-4 right-4 z-10">
+                    <span th:if="${project.status == 'UPCOMING'}" class="bg-amber-500 text-white shadow-md border border-amber-400/50 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider block" th:text="${project.status}">Upcoming</span>
+                    <span th:if="${project.status == 'NEW_LAUNCH'}" class="bg-emerald-500 text-white shadow-md border border-emerald-400/50 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider block" th:text="${project.status}">New</span>
+                    <span th:if="${project.status == 'ON GOING'}" class="bg-blue-500 text-white shadow-md border border-blue-400/50 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider block" th:text="${project.status}">On Going</span>
+                </div>
+
+                <!-- Hover Actions -->
+                <div class="absolute inset-0 bg-dark/40 opacity-0 group-hover:opacity-100 backdrop-blur-[2px] transition-all duration-300 flex items-center justify-center gap-3 z-30">
+                    <a th:href="@{/api/update/newProject/{nId}(nId=${project.id})}"
+                       class="w-10 h-10 bg-white text-dark rounded-full flex items-center justify-center shadow-lg hover:bg-primary hover:text-white transition-all transform hover:scale-110">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a th:href="@{/api/newProject/delete/{dId}(dId=${project.id})}"
+                       class="w-10 h-10 bg-white text-red-500 rounded-full flex items-center justify-center shadow-lg hover:bg-red-500 hover:text-white transition-all transform hover:scale-110">
+                        <i class="bi bi-trash3"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="p-6 flex-grow flex flex-col">
+                <div class="mb-4 border-b border-slate-100 pb-4">
+                    <p class="text-[10px] font-bold text-primary uppercase tracking-widest mb-1 flex items-center gap-1">
+                        <i class="bi bi-building-add"></i> New Development
+                    </p>
+                    <h3 class="text-xl font-bold text-dark group-hover:text-primary transition-colors truncate" th:text="${project.projectName}">Project Name</h3>
+                </div>
+
+                <div class="space-y-3 mb-6">
+                    <p class="text-xs text-slate-500 font-medium flex items-center truncate">
+                        <div class="w-6 h-6 rounded bg-slate-50 flex items-center justify-center text-slate-400 mr-2"><i class="bi bi-building"></i></div>
+                        <span th:text="${project.builderName}">Builder Name</span>
+                    </p>
+                    <p class="text-xs text-slate-500 font-medium flex items-center truncate">
+                        <div class="w-6 h-6 rounded bg-slate-50 flex items-center justify-center text-slate-400 mr-2"><i class="bi bi-geo-alt"></i></div>
+                        <span th:text="${project.location}">Location</span>
+                    </p>
+                </div>
+                
+                <div class="mt-auto pt-4 border-t border-slate-100">
+                    <a th:href="@{/api/update/newProject/{nId}(nId=${project.id})}" class="text-primary font-semibold text-xs hover:text-primary-hover flex items-center gap-1 w-full justify-center bg-indigo-50/50 py-2 rounded-lg transition-colors">
+                        Manage Project <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<footer class="bg-light pt-20 pb-10 border-t border-slate-200 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div class="md:col-span-1">
+                <a th:href="@{/}" class="flex items-center gap-2 mb-4 no-underline">
+                    <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md text-sm">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+                </a>
+                <p class="text-slate-500 text-sm leading-relaxed mb-6">
+                    The modern infrastructure for global real estate. Seamless, secure, and sophisticated.
+                </p>
+                <div class="flex gap-4">
+                    <a aria-label="Twitter" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-twitter-x"></i></a>
+                    <a aria-label="LinkedIn" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-linkedin"></i></a>
+                </div>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Platform</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="All Properties" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-grid"></i> All Properties</a></li>
+                    <li><a aria-label="Property Search" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-search"></i> Property Search</a></li>
+                    <li><a aria-label="Agent Directory" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-people"></i> Agent Directory</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Company</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="About Us" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">About Us</a></li>
+                    <li><a aria-label="Contact Support" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Contact Support</a></li>
+                    <li><a aria-label="Terms of Service" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Support</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><p aria-label="Assistance" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Assistance</p></li>
+                    <li><a aria-label="Support Email" href="mailto:support@elitenest.com" class="text-primary font-bold no-underline">support@elitenest.com</a></li>
+                    <li class="pt-4"><span aria-label="Premier Real Estate" class="bg-indigo-50 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-indigo-100 italic">Premier Real Estate</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
+            <p>&copy; 2026 EliteNest Inc. All rights reserved.</p>
+            <p class="flex items-center gap-1"><i class="bi bi-shield-check text-emerald-500"></i> Secure & Verified Platform</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    function setActiveTab(button) {
+        document.querySelectorAll('.status-tab').forEach(btn => {
+            btn.classList.remove('active-tab', 'text-dark');
+            btn.classList.add('text-slate-500');
+        });
+        button.classList.add('active-tab', 'text-dark');
+        button.classList.remove('text-slate-500');
+    }
+
+    function filterStatus(status) {
+        const propertyGrid = document.getElementById('propertyGrid');
+        const newProjectGrid = document.getElementById('newProjectGrid');
+        const cards = document.querySelectorAll('#propertyGrid .stripe-card');
+        const noResult = document.getElementById('noResult');
+
+        status = status.toUpperCase();
+
+        if (propertyGrid) propertyGrid.style.display = 'none';
+        if (newProjectGrid) newProjectGrid.style.display = 'none';
+        noResult.classList.add('hidden');
+
+        if (status === 'NEW') {
+            if (newProjectGrid && newProjectGrid.children.length > 0) {
+                newProjectGrid.style.display = 'grid';
+            } else {
+                noResult.classList.remove('hidden');
+            }
+            return;
+        }
+
+        let visibleCount = 0;
+        if (propertyGrid) propertyGrid.style.display = 'grid';
+
+        cards.forEach(card => {
+            const cardStatus = card.getAttribute('data-status');
+            if (cardStatus && cardStatus.toUpperCase() === status) {
+                card.style.display = 'flex';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        if (visibleCount === 0) {
+            propertyGrid.style.display = 'none';
+            noResult.classList.remove('hidden');
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Enquiries | EliteNest</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#635bff',
+                        'primary-hover': '#5851eb',
+                        dark: '#0a2540',
+                        light: '#f6f9fc',
+                        slate: {
+                            400: '#8792a2',
+                            500: '#425466',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+
+        .enquiry-card { background: white; border-radius: 1.5rem; border: 1px solid #e2e8f0; transition: all 0.3s ease; }
+        .enquiry-card:hover { border-color: #635bff; box-shadow: 0 10px 20px rgba(99, 91, 255, 0.05); }
+        
+        .stat-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: .15em; color: #8792a2; margin-bottom: 0.5rem; }
+        
+        .table-premium thead th { background: #f8fafc; text-transform: uppercase; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em; color: #8792a2; padding: 1.25rem 1.5rem; border-bottom: 1px solid #e2e8f0; }
+        .table-premium tbody td { padding: 1.5rem; vertical-align: middle; border-bottom: 1px solid #f1f5f9; }
+    </style>
+</head>
+
+<body class="bg-light text-slate-500 antialiased overflow-x-hidden" x-data="{ scrolled: false, profileMenu: false, mobileMenu: false }"
+      @scroll.window="scrolled = (window.pageYOffset > 20)"
+      :class="mobileMenu ? 'overflow-hidden' : ''">
+
+<header :class="scrolled ? 'glass-nav shadow-sm py-3' : 'bg-transparent py-5'" class="fixed top-0 w-full z-50 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 flex justify-between items-center">
+        <!-- Logo -->
+        <a th:href="@{/api/agentIndex}" class="flex items-center gap-2 group">
+            <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md">
+                <i class="bi bi-building"></i>
+            </div>
+            <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+        </a>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden lg:flex items-center gap-8 font-medium text-sm text-slate-500">
+            <a th:href="@{/api/agent/agentProperties}" class="hover:text-primary transition-colors flex items-center gap-2 no-underline font-bold text-slate-500">
+                <i class="bi bi-building"></i> My Property
+            </a>
+        </nav>
+
+        <!-- Desktop Profile Menu -->
+        <div class="hidden lg:flex items-center gap-4 relative" @click.away="profileMenu = false">
+            <button @click="profileMenu = !profileMenu" class="flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none">
+                <div class="text-right">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">Elite Agent</p>
+                    <p class="text-sm font-bold text-dark leading-none mt-1" th:text="${agent.name}">Alex Sterling</p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center border border-primary/20 overflow-hidden">
+                    <img aria-label="Agent Image" th:if="${agent.image != null}" th:src="@{/api/agent/image/{id}(id=${agent.id})}" class="w-full h-full object-cover">
+                    <i th:unless="${agent.image != null}" class="bi bi-person-fill text-lg"></i>
+                </div>
+            </button>
+
+            <!-- Dropdown -->
+            <div x-show="profileMenu" x-cloak x-transition
+                 class="absolute top-full right-0 mt-3 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-[1100]">
+                <div class="p-4 bg-slate-50 border-b border-slate-100">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Authorized Agency</p>
+                    <p class="text-sm font-bold text-primary" th:text="${agent.companyName}">Elite Realty</p>
+                </div>
+                <div class="p-2">
+                    <a th:href="@{/api/save/ediprofile}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 transition-colors text-sm font-medium no-underline">
+                        <i class="bi bi-sliders2"></i> Edit Profile
+                    </a>
+                    <div class="border-t border-slate-100 mt-2 pt-2">
+                        <a th:href="@{/api/agent/logout}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-red-50 text-red-600 transition-colors text-sm font-bold no-underline">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Toggle -->
+        <button aria-label="Toggle Menu" @click="mobileMenu = !mobileMenu" class="lg:hidden text-2xl text-dark">
+            <i class="bi" :class="mobileMenu ? 'bi-x' : 'bi-list'"></i>
+        </button>
+    </div>
+</header>
+
+<!-- Mobile Menu Overlay -->
+<div x-show="mobileMenu" x-cloak class="fixed inset-0 z-[1200] lg:hidden">
+    <div x-show="mobileMenu" x-transition.opacity class="absolute inset-0 bg-dark/40 backdrop-blur-sm" @click="mobileMenu = false"></div>
+    <div x-show="mobileMenu" x-transition:enter="transition transform ease-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
+         class="absolute right-0 top-0 h-full w-72 bg-white shadow-2xl p-6 pt-24 space-y-4">
+        
+        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1" th:text="${agent.companyName}">Agency</p>
+            <p class="text-sm font-bold text-primary leading-none" th:text="${agent.name}">Agent Name</p>
+        </div>
+
+        <nav class="flex flex-col gap-2">
+            <a th:href="@{/api/agent/agentProperties}" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition no-underline">
+                <i class="bi bi-building-fill text-lg text-primary"></i> My Property
+            </a>
+        </nav>
+
+        <div class="border-t border-slate-100 pt-4 flex flex-col gap-2">
+            <a th:href="@{/api/save/ediprofile}" class="flex items-center gap-3 p-3 text-slate-600 font-bold hover:bg-slate-50 rounded-xl transition no-underline">
+                <i class="bi bi-sliders2"></i> Edit Profile
+            </a>
+            <a th:href="@{/api/agent/logout}" class="flex items-center gap-3 p-3 text-red-600 font-bold hover:bg-red-50 rounded-xl transition no-underline">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+        </div>
+    </div>
+</div>
+
+<main class="pt-32 pb-20 max-w-7xl mx-auto px-6 lg:px-8 min-h-screen">
+    <div class="mb-12 animate-fade-in-up">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="bg-indigo-50 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-indigo-100 italic">Incoming Leads</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-extrabold text-dark tracking-tight mb-3">Property Enquiries</h1>
+        <p class="text-slate-500 text-lg font-medium">Manage and respond to enquiries from interested buyers.</p>
+    </div>
+
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden mb-10">
+        <div class="px-8 py-6 border-b border-slate-100 bg-slate-50/30 flex items-center justify-between">
+            <h3 class="stat-label !mb-0 flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                Active Requests (<span th:text="${userEnquires.size()}">0</span>)
+            </h3>
+        </div>
+
+        <div class="overflow-x-auto overflow-y-visible">
+            <table class="w-full table-premium">
+                <thead>
+                    <tr>
+                        <th>Property Details</th>
+                        <th>Contact info</th>
+                        <th>Message</th>
+                        <th class="text-end">Connect</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    <tr th:each="enquiry : ${userEnquires}" class="hover:bg-slate-50/50 transition-colors">
+                        <td>
+                            <div class="flex items-center gap-4">
+                                <div class="w-16 h-12 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-100 shadow-sm">
+                                    <img aria-label="Property Image" th:if="${enquiry.property.image != null}"
+                                         th:src="@{/api/property/image/{id}(id=${enquiry.property.id})}"
+                                         class="w-full h-full object-cover">
+                                    <div th:unless="${enquiry.property.image != null}" class="w-full h-full flex items-center justify-center text-slate-300 bg-slate-100">
+                                        <i class="bi bi-image"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-dark leading-tight mb-0.5" th:text="${enquiry.property.title}">Villa Serene</p>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest" th:text="${enquiry.property.location}">Dubai Marina</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="flex flex-col gap-0.5">
+                                <p class="text-sm font-bold text-dark" th:text="${enquiry.user.name}">John Doe</p>
+                                <p class="text-xs font-medium text-slate-500" th:text="${enquiry.user.email}">john@example.com</p>
+                                <p class="text-[10px] font-bold text-primary uppercase mt-1 tracking-wider" th:text="${enquiry.user.phone}">+971 50 123 4567</p>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="max-w-xs">
+                                <p class="text-xs text-slate-600 leading-relaxed italic" th:text="'&quot;' + ${enquiry.message} + '&quot;'">I am interested in viewing this property this weekend.</p>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="flex justify-end gap-2">
+                                <a th:href="'mailto:' + ${enquiry.user.email}" class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-primary hover:border-primary hover:shadow-md transition-all no-underline">
+                                    <i class="bi bi-envelope"></i>
+                                </a>
+                                <a th:href="'tel:' + ${enquiry.user.phone}" class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-emerald-500 hover:border-emerald-500 hover:shadow-md transition-all no-underline">
+                                    <i class="bi bi-telephone"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Empty State -->
+                    <tr th:if="${userEnquires.isEmpty()}">
+                        <td colspan="4" class="py-24 text-center">
+                            <div class="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-4 border border-slate-100">
+                                <i class="bi bi-inbox text-3xl text-slate-300"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-dark mb-1">No enquiries yet</h4>
+                            <p class="text-slate-500 text-sm">Active enquires for your properties will appear here.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<footer class="bg-light pt-20 pb-10 border-t border-slate-200 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div class="md:col-span-1">
+                <a th:href="@{/}" class="flex items-center gap-2 mb-4 no-underline">
+                    <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md text-sm">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+                </a>
+                <p class="text-slate-500 text-sm leading-relaxed mb-6">
+                    The modern infrastructure for global real estate. Seamless, secure, and sophisticated.
+                </p>
+                <div class="flex gap-4">
+                    <a aria-label="Twitter" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-twitter-x"></i></a>
+                    <a aria-label="LinkedIn" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-linkedin"></i></a>
+                </div>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Platform</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="All Properties" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-grid"></i> All Properties</a></li>
+                    <li><a aria-label="Property Search" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-search"></i> Property Search</a></li>
+                    <li><a aria-label="Agent Directory" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-people"></i> Agent Directory</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Company</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="About Us" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">About Us</a></li>
+                    <li><a aria-label="Contact Support" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Contact Support</a></li>
+                    <li><a aria-label="Terms of Service" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Support</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Assistance</p></li>
+                    <li><a aria-label="Support Email" href="mailto:support@elitenest.com" class="text-primary font-bold no-underline">support@elitenest.com</a></li>
+                    <li class="pt-4"><span class="bg-indigo-50 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-indigo-100 italic">Premier Real Estate</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
+            <p>&copy; 2026 EliteNest Inc. All rights reserved.</p>
+            <p class="flex items-center gap-1"><i class="bi bi-shield-check text-emerald-500"></i> Secure & Verified Platform</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${agent.name} + ' | Executive Profile'">Professional Agent Profile</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    primary: '#635bff',
+                    'primary-hover': '#5851eb',
+                    dark: '#0a2540',
+                    light: '#f6f9fc',
+                    slate: {
+                        400: '#8792a2',
+                        500: '#425466',
+                    }
+                },
+                fontFamily: {
+                    sans: ['Inter', 'sans-serif'],
+                }
+            }
+        }
+    }
+  </script>
+  <link rel="stylesheet" th:href="@{/css/global.css}">
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+  <style>
+    [x-cloak] { display: none !important; }
+    /* Smooth scroll margin for fixed header */
+    #contact { scroll-margin-top: 100px; }
+  </style>
+</head>
+<body class="bg-light text-slate-500 antialiased overflow-x-hidden" x-data="{ profileMenu: false, mobileMenu: false, scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 20)">
+
+<!-- Navigation -->
+<header :class="scrolled ? 'glass-nav shadow-sm py-3' : 'bg-transparent py-5'" class="fixed top-0 w-full z-50 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 flex justify-between items-center">
+        
+        <!-- Logo -->
+        <a th:href="@{/api/userIndex}" class="flex items-center gap-2 group">
+            <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md">
+                <i class="bi bi-building"></i>
+            </div>
+            <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+        </a>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden select-none lg:flex items-center gap-8 font-medium text-sm text-slate-500">
+            <a href="#contact" class="hover:text-primary transition-colors flex items-center gap-2">
+                <i class="bi bi-envelope"></i> Contact Agent
+            </a>
+        </nav>
+
+        <!-- Profile Menu (Conditional) -->
+        <div class="hidden lg:flex items-center gap-4 relative" @click.away="profileMenu = false">
+            
+            <!-- User Profile Dropdown -->
+            <button th:if="${user!=null}" @click="profileMenu = !profileMenu" class="flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none">
+                <div class="text-right">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">User Portal</p>
+                    <p class="text-sm font-bold text-dark leading-none mt-1" th:text="${user.name}">Guest User</p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+            </button>
+
+            <!-- Owner Profile Dropdown -->
+            <button th:if="${owner!=null}" @click="profileMenu = !profileMenu" class="flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none">
+                <div class="text-right">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">Owner Portal</p>
+                    <p class="text-sm font-bold text-dark leading-none mt-1" th:text="${owner.name}">Owner</p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-md border border-primary/20">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+
+
+
+
+            </button>
+
+            <!-- Public Dropdown details -->
+            <div x-show="profileMenu" x-cloak x-transition
+                 class="absolute top-full right-0 mt-3 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-[110]">
+                <div class="p-4 bg-slate-50 border-b border-slate-100">
+                    <p class="text-xs font-semibold text-slate-500 mb-1">Welcome to</p>
+                    <p class="text-sm font-bold text-dark">EliteNest</p>
+                </div>
+                <div class="p-2">
+                    <a th:href="@{/api/login}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 transition-colors text-sm font-medium">
+                        <i class="bi bi-person-badge"></i> Login
+                    </a>
+                    <a th:href="@{/api/save/edituserprofile}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 transition-colors text-sm font-medium">
+                        <i class="bi bi-sliders2"></i> Edit Profile
+                    </a>
+                    <div class="border-t border-slate-100 mt-2 pt-2">
+                        <a th:href="@{/api/logout}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-red-50 text-red-600 transition-colors text-sm font-bold">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Toggle -->
+        <button aria-label="Toggle menu" class="lg:hidden text-dark text-2xl" @click="mobileMenu = !mobileMenu">
+            <i class="bi" :class="mobileMenu ? 'bi-x' : 'bi-list'"></i>
+        </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div x-show="mobileMenu" x-transition.opacity class="absolute top-full left-0 w-full bg-white shadow-xl border-t border-slate-100 flex flex-col lg:hidden py-4 px-6 gap-4 z-[100]">
+        <div class="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Portal</p>
+            <p class="text-sm font-bold text-dark leading-none" th:text="${user != null ? user.name : (owner != null ? owner.name : 'Guest User')}">Guest User</p>
+        </div>
+
+        <a href="#contact" @click="mobileMenu = false" class="font-medium text-slate-500 hover:text-primary flex items-center justify-between p-2">
+            <span class="flex items-center gap-3"><i class="bi bi-envelope text-lg"></i> Contact</span>
+        </a>
+        <a th:href="@{/api/showAgent}" @click="mobileMenu = false" class="font-medium text-slate-500 hover:text-primary flex items-center justify-between p-2">
+            <span class="flex items-center gap-3"><i class="bi bi-arrow-left text-lg"></i> Go Back</span>
+        </a>
+
+        <hr class="border-slate-100 my-2">
+        
+        <a th:href="@{/api/login}" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3 p-2">
+            <i class="bi bi-person-badge text-lg"></i> Login
+        </a>
+        <a th:href="@{/api/save/edituserprofile}" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3 p-2">
+            <i class="bi bi-sliders2 text-lg"></i> Edit Profile
+        </a>
+        <a th:href="@{/api/logout}" class="font-bold text-red-600 hover:text-red-700 flex items-center gap-3 p-2">
+            <i class="bi bi-box-arrow-right text-lg"></i> Logout
+        </a>
+    </div>
+</header>
+
+<main class="pt-32 max-w-7xl mx-auto px-6 lg:px-8 pb-24">
+  
+  <!-- Agent Header Info -->
+  <div class="flex flex-col lg:flex-row gap-12 items-center mb-24 mt-8">
+    <div class="relative group w-full max-w-md lg:w-1/3">
+      <div class="absolute inset-0 bg-primary/5 rounded-[2rem] transform rotate-3 z-0"></div>
+      <img th:src="@{/api/agent/image/{id}(id=${agent.id})}" alt="Agent Image" class="relative z-10 w-full aspect-[3/4] object-cover rounded-[2rem] shadow-xl">
+      
+      <!-- Experience Badge -->
+      <div class="absolute bottom-6 -right-4 lg:-right-6 bg-white p-5 rounded-2xl shadow-xl border border-slate-100 hidden md:block z-20">
+        <p class="text-primary font-extrabold text-2xl mb-1">10+</p>
+        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Years Exp.</p>
+      </div>
+    </div>
+
+    <div class="flex-grow text-center lg:text-left">
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 text-green-600 text-[10px] font-bold uppercase tracking-widest mb-6 border border-green-100">
+        <i class="bi bi-patch-check-fill"></i> Verified Premier Agent
+      </div>
+      <h1 class="text-5xl md:text-6xl font-extrabold text-dark tracking-tight mb-4" th:text="${agent.name}">Agent Name</h1>
+      <p class="text-xl text-slate-500 font-medium mb-10" th:text="${agent.companyName}">Luxury Property Consultant</p>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10 text-left">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">RERA License</p>
+          <p class="text-dark font-bold text-base" th:text="${agent.licenseNumber}">#00000</p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm col-span-2 md:col-span-1">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Service Area</p>
+          <p class="text-dark font-bold text-base">Global & Local</p>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+        <a href="#contact" class="stripe-btn text-sm px-8 py-3.5">
+          <i class="bi bi-calendar-event"></i> Book Consultation
+        </a>
+        <div class="flex items-center justify-center gap-3 px-6 py-3 border border-slate-200 rounded-full font-bold text-dark bg-white">
+          <i class="bi bi-whatsapp text-green-500 text-lg"></i>
+          <span th:text="${agent.phone}">+971 00 000 0000</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+    <div class="lg:col-span-8">
+      
+      <!-- Exec Overview -->
+      <section class="mb-20">
+        <h2 class="text-2xl font-bold text-dark mb-6">Executive Overview</h2>
+        <p class="text-lg text-slate-500 leading-relaxed mb-8">
+          Professional excellence in real estate requires more than just transactions; it requires a deep understanding of market dynamics and client aspirations.
+        </p>
+        <div class="p-8 bg-indigo-50/50 rounded-2xl border-l-4 border-primary text-dark italic font-medium leading-relaxed">
+          "My mission is to provide high-net-worth investors with the data-driven insights needed to secure premium assets in the most competitive districts."
+        </div>
+      </section>
+
+      <!-- Agent Properties -->
+      <section>
+        <div class="flex justify-between items-end mb-8">
+          <h2 class="text-2xl font-bold text-dark">Agent Portfolio</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div th:each="property : ${properties}" class="stripe-card group cursor-pointer flex flex-col h-full">
+            <div class="relative overflow-hidden aspect-[4/3] bg-gray-100">
+              <img aria-label="Property Image" th:src="@{/api/property/image/{id}(id=${property.id})}"
+                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" th:alt="${property.propertyType}">
+              <div class="absolute top-4 left-4 bg-white/90 backdrop-blur shadow-sm px-3 py-1.5 rounded-full">
+                <span class="text-xs font-bold text-primary" th:text="${'INR ' + #numbers.formatDecimal(property.price, 0, 'COMMA', 0, 'POINT')}">Price</span>
+              </div>
+            </div>
+            
+            <div class="p-6 flex flex-col flex-grow">
+              <h3 class="text-lg font-bold text-dark mb-2 line-clamp-1" th:text="${property.title}">Title</h3>
+              <p class="text-slate-500 text-sm mb-4 flex items-center gap-1 line-clamp-1">
+                <i class="bi bi-geo-alt"></i> <span th:text="${property.location}">Location</span>
+              </p>
+              
+              <div class="mt-auto">
+                <div class="flex justify-between items-center border-t border-slate-100 pt-4 mb-4 text-sm text-slate-500 font-medium">
+                  <div class="flex items-center gap-2">
+                    <i class="bi bi-house-door text-primary"></i> <span th:text="${property.bhk + ' BHK'}">BHK</span>
+                  </div>
+                  <div class="flex items-center gap-2 max-w-[50%]">
+                    <i class="bi bi-person-badge text-primary"></i> <span class="truncate" th:text="${agent.name}">Agent</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <a th:if="${user!=null}" th:href="@{/api/viewAllProperties/details/{id}(id=${property.id})}" class="flex-grow text-center stripe-btn-outline text-sm py-2">
+                    Explore property
+                    <i class="bi bi-arrow-right"></i>
+                  </a>
+                  <a th:if="${owner!=null}" th:href="@{/api/owner/viewAllProperties/details/{id}(id=${property.id})}" class="flex-grow text-center stripe-btn-outline text-sm py-2">
+                    Explore Property
+                    <i class="bi bi-arrow-right"></i>
+                  </a>
+                  <!-- <button aria-label="Add to wishlist" class="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-full hover:text-red-500 hover:bg-red-50 transition-colors">
+                    <i class="bi bi-heart"></i>
+                  </button> -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Contact Sidebar -->
+    <div class="lg:col-span-4">
+      <div id="contact" class="sticky top-32 bg-dark rounded-[2rem] p-8 text-white shadow-xl">
+        <h3 class="text-xl font-bold mb-8">Direct Contact</h3>
+        
+        <div class="space-y-6">
+          <div class="flex gap-4 items-center">
+            <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 text-primary">
+              <i class="bi bi-envelope text-lg"></i>
+            </div>
+            <div class="overflow-hidden">
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Email</p>
+              <p class="text-sm font-medium truncate w-full" th:text="${agent.email}">email@domain.com</p>
+            </div>
+          </div>
+
+          <div class="flex gap-4 items-center">
+            <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 text-primary">
+              <i class="bi bi-telephone text-lg"></i>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Phone</p>
+              <p class="text-sm font-medium" th:text="${agent.phone}">+971 000 0000</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-white/10">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Connect Socially</p>
+          <div class="flex gap-4">
+            <a aria-label="Linkedin" href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-primary transition-colors">
+                <i class="bi bi-linkedin"></i>
+            </a>
+            <a aria-label="Twitter" href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-primary transition-colors">
+                <i class="bi bi-twitter-x"></i>
+            </a>
+            <a aria-label="Instagram" href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-primary transition-colors">
+                <i class="bi bi-instagram"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Global Footer -->
+<footer class="bg-light pt-20 pb-10 border-t border-slate-200 mt-20">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div class="md:col-span-1">
+                <a th:href="@{/}" class="flex items-center gap-2 mb-4 no-underline">
+                    <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md text-sm">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+                </a>
+                <p class="text-slate-500 text-sm leading-relaxed mb-6">
+                    The modern infrastructure for global real estate. Seamless, secure, and sophisticated.
+                </p>
+                <div class="flex gap-4">
+                    <a aria-label="Twitter" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-twitter-x"></i></a>
+                    <a aria-label="Linkedin" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-linkedin"></i></a>
+                </div>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Platform</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="All Properties" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-grid"></i> All Properties</a></li>
+                    <li><a aria-label="Property Search" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-search"></i> Property Search</a></li>
+                    <li><a aria-label="Agent Directory" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-people"></i> Agent Directory</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Company</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="About Us" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">About Us</a></li>
+                    <li><a aria-label="Contact Support" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Contact Support</a></li>
+                    <li><a aria-label="Terms of Service" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Support</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Assistance</p></li>
+                    <li><a aria-label="Support Email" href="mailto:support@elitenest.com" class="text-primary font-bold no-underline">support@elitenest.com</a></li>
+                    <li class="pt-4"><span class="bg-indigo-50 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-indigo-100 italic">Premier Real Estate</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
+            <p>&copy; 2026 EliteNest Inc. All rights reserved.</p>
+            <p class="flex items-center gap-1"><i class="bi bi-shield-check text-emerald-500"></i> Secure & Verified Platform</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

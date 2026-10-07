@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EliteNest | Premium Real Estate</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#635bff',
+                        'primary-hover': '#5851eb',
+                        dark: '#0a2540',
+                        light: '#f6f9fc',
+                        slate: {
+                            400: '#8792a2',
+                            500: '#425466',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Global CSS -->
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body class="bg-light text-slate-500 antialiased" x-data="{ scrolled: false, mobileMenu: false }" @scroll.window="scrolled = (window.pageYOffset > 20)">
+
+    <!-- Navigation -->
+    <header :class="scrolled ? 'glass-nav shadow-sm py-3' : 'bg-transparent py-5'" class="fixed top-0 w-full z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 flex justify-between items-center">
+            
+            <!-- Logo -->
+            <a href="/" class="flex items-center gap-2 group">
+                <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md">
+                    <i class="bi bi-building"></i>
+                </div>
+                <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+            </a>
+
+            <!-- Desktop Nav -->
+            <!-- <nav class="hidden select-none md:flex items-center gap-8 font-medium text-sm text-slate-500">
+                <a href="/" class="hover:text-primary transition-colors flex items-center gap-2">
+                    <i class="bi bi-house-door"></i> Home
+                </a>
+                <a th:href="@{/api/allproperties}" class="hover:text-primary transition-colors flex items-center gap-2">
+                    <i class="bi bi-grid"></i> Properties
+                </a>
+                <a th:href="@{/api/rentbuysearch}" class="hover:text-primary transition-colors flex items-center gap-2">
+                    <i class="bi bi-search"></i> Search
+                </a>
+            </nav> -->
+
+            <!-- Desktop Actions -->
+            <div class="hidden md:flex items-center gap-4">
+                <a th:href="@{/api/login}" class="text-sm font-semibold text-dark hover:text-primary transition-colors flex items-center gap-2">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign in
+                </a>
+                <a th:href="@{/api/allsignup}" class="stripe-btn text-sm">
+                    <i class="bi bi-person-plus"></i> Get Started
+                </a>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button aria-label="Toggle Mobile Menu" class="md:hidden text-dark text-2xl" @click="mobileMenu = !mobileMenu">
+                <i class="bi" :class="mobileMenu ? 'bi-x' : 'bi-list'"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div x-show="mobileMenu" x-transition.opacity class="absolute top-full left-0 w-full bg-white shadow-xl border-t border-slate-100 flex flex-col md:hidden py-4 px-6 gap-4">
+            <!-- <a href="/" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3">
+                <i class="bi bi-house-door text-lg"></i> Home
+            </a>
+            <a th:href="@{/api/allproperties}" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3">
+                <i class="bi bi-grid text-lg"></i> Properties
+            </a>
+            <a th:href="@{/api/rentbuysearch}" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3">
+                <i class="bi bi-search text-lg"></i> Search
+            </a>
+            <hr class="border-slate-100 my-2"> -->
+            <a th:href="@{/api/login}" class="font-medium text-dark hover:text-primary flex items-center gap-3">
+                <i class="bi bi-box-arrow-in-right text-lg"></i> Sign in
+            </a>
+            <a th:href="@{/api/allsignup}" class="stripe-btn mt-2 w-full justify-center">
+                <i class="bi bi-person-plus"></i> Get Started
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        
+        <!-- Hero Section -->
+        <section class="hero-gradient pt-32 pb-20 lg:pt-48 lg:pb-32 px-6 lg:px-8">
+            <div class="hero-shape"></div>
+            <div class="max-w-7xl mx-auto relative z-10 grid lg:grid-cols-2 gap-12 items-center">
+                <div class="max-w-2xl">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-primary text-xs font-bold mb-6 border border-indigo-100">
+                        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                        Premium Global Real Estate
+                    </div>
+                    <h1 class="text-5xl lg:text-7xl font-extrabold text-dark tracking-tight leading-[1.1] mb-6">
+                        Discover your next <span class="text-primary">legacy.</span>
+                    </h1>
+                    <p class="text-lg lg:text-xl text-slate-500 mb-10 leading-relaxed font-light">
+                        The infrastructure for global real estate. Join EliteNest to access exclusive, off-market properties and streamlined global transactions.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a th:href="@{/api/rentbuysearch}" class="stripe-btn text-base px-8 py-3.5">
+                            Start searching <i class="bi bi-arrow-right"></i>
+                        </a>
+                        <a th:href="@{/api/allsignup}" class="stripe-btn-outline text-base px-8 py-3.5">
+                            Create free account
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Hero Image/Graphic -->
+                <div class="relative lg:ml-auto w-full max-w-lg">
+                    <div class="absolute inset-0 bg-primary/10 rounded-3xl transform rotate-3 scale-105 z-0"></div>
+                    <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=800" class="relative z-10 rounded-2xl shadow-2xl object-cover h-[500px] w-full" alt="Luxury Home">
+                    
+                    <!-- Floating Badge -->
+                    <div class="absolute -bottom-6 -left-6 bg-white p-4 rounded-xl shadow-xl z-20 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-green-100 text-green-600 flex justify-center items-center text-xl">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-dark">Verified Listings</p>
+                            <p class="text-xs text-slate-500">100% secure transactions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="py-24 bg-white relative">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <h2 class="text-sm font-bold text-primary tracking-widest uppercase mb-3">Why EliteNest</h2>
+                    <h3 class="text-3xl md:text-4xl font-bold text-dark mb-6">A unified platform for premium realestate.</h3>
+                    <p class="text-slate-500 text-lg">We provide a seamless, secure, and modern experience for buyers, sellers, and agents across the globe.</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Feature 1 -->
+                    <div class="bg-light rounded-2xl p-8 hover:-translate-y-1 transition-transform border border-slate-100">
+                        <div class="w-12 h-12 bg-white rounded-xl shadow-sm text-primary text-xl flex items-center justify-center mb-6">
+                            <i class="bi bi-search"></i>
+                        </div>
+                        <h4 class="text-xl font-bold text-dark mb-3">Intelligent Search</h4>
+                        <p class="text-slate-500 text-sm leading-relaxed">
+                            Filter properties by exact coordinates, price indices, and amenities with unprecedented accuracy.
+                        </p>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="bg-light rounded-2xl p-8 hover:-translate-y-1 transition-transform border border-slate-100">
+                        <div class="w-12 h-12 bg-white rounded-xl shadow-sm text-primary text-xl flex items-center justify-center mb-6">
+                            <i class="bi bi-shield-lock"></i>
+                        </div>
+                        <h4 class="text-xl font-bold text-dark mb-3">Secure Transactions</h4>
+                        <p class="text-slate-500 text-sm leading-relaxed">
+                            Enterprise-grade security infrastructure for managing proof of funds and confidential documents.
+                        </p>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="bg-light rounded-2xl p-8 hover:-translate-y-1 transition-transform border border-slate-100">
+                        <div class="w-12 h-12 bg-white rounded-xl shadow-sm text-primary text-xl flex items-center justify-center mb-6">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <h4 class="text-xl font-bold text-dark mb-3">Market Intelligence</h4>
+                        <p class="text-slate-500 text-sm leading-relaxed">
+                            Access real-time valuation metrics, historical price trends, and actionable neighborhood insights.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Properties -->
+        <section class="py-24 bg-light">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="flex justify-between items-end mb-12">
+                    <div>
+                        <h2 class="text-3xl font-bold text-dark mb-4">Featured Collection</h2>
+                        <p class="text-slate-500">Hand-picked residences in prime locations.</p>
+                    </div>
+                    <a th:href="@{/api/allproperties}" class="text-primary font-semibold hover:text-primary-hover flex items-center gap-1">
+                        View all <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Property Card Example -->
+                    <div class="stripe-card group cursor-pointer">
+                        <div class="relative overflow-hidden aspect-[4/3] bg-gray-100">
+                            <img src="https://images.unsplash.com/photo-1613490493576-7fde63acd811" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Property">
+                            <span class="absolute top-4 left-4 bg-white/90 backdrop-blur text-dark text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                                For Sale
+                            </span>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-dark mb-2">The Glass House</h3>
+                            <p class="text-slate-500 text-sm mb-4 flex items-center gap-1">
+                                <i class="bi bi-geo-alt"></i> Beverly Hills, CA
+                            </p>
+                            <div class="flex justify-between items-center border-t border-gray-100 pt-4 mt-4">
+                                <span class="font-bold text-primary text-xl">$8,500,000</span>
+                                <div class="flex gap-3 text-sm text-slate-500">
+                                    <span title="Beds"><i class="bi bi-moon"></i> 4</span>
+                                    <span title="Baths"><i class="bi bi-droplet"></i> 5</span>
+                                    <span title="Area"><i class="bi bi-arrows-fullscreen"></i> 4.2k sqft</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Property Card Example 2 -->
+                    <div class="stripe-card group cursor-pointer">
+                        <div class="relative overflow-hidden aspect-[4/3] bg-gray-100">
+                            <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Property">
+                            <span class="absolute top-4 left-4 bg-white/90 backdrop-blur text-dark text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                                Premium
+                            </span>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-dark mb-2">Azure Coast Villa</h3>
+                            <p class="text-slate-500 text-sm mb-4 flex items-center gap-1">
+                                <i class="bi bi-geo-alt"></i> Palm Jumeirah, Dubai
+                            </p>
+                            <div class="flex justify-between items-center border-t border-gray-100 pt-4 mt-4">
+                                <span class="font-bold text-primary text-xl">$12,900,000</span>
+                                <div class="flex gap-3 text-sm text-slate-500">
+                                    <span title="Beds"><i class="bi bi-moon"></i> 6</span>
+                                    <span title="Baths"><i class="bi bi-droplet"></i> 7</span>
+                                    <span title="Area"><i class="bi bi-arrows-fullscreen"></i> 8.5k sqft</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Property Card Example 3 -->
+                    <div class="stripe-card group cursor-pointer">
+                        <div class="relative overflow-hidden aspect-[4/3] bg-gray-100">
+                            <img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Property">
+                            <span class="absolute top-4 left-4 bg-white/90 backdrop-blur text-dark text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                                Off-Market
+                            </span>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-dark mb-2">Serenity Estates</h3>
+                            <p class="text-slate-500 text-sm mb-4 flex items-center gap-1">
+                                <i class="bi bi-geo-alt"></i> Aspen, Colorado
+                            </p>
+                            <div class="flex justify-between items-center border-t border-gray-100 pt-4 mt-4">
+                                <span class="font-bold text-primary text-xl">$15,200,000</span>
+                                <div class="flex gap-3 text-sm text-slate-500">
+                                    <span title="Beds"><i class="bi bi-moon"></i> 8</span>
+                                    <span title="Baths"><i class="bi bi-droplet"></i> 9</span>
+                                    <span title="Area"><i class="bi bi-arrows-fullscreen"></i> 12k sqft</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action -->
+        <section class="py-24 bg-dark relative overflow-hidden">
+            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
+            <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+                <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Start your journey today</h2>
+                <p class="text-slate-300 text-lg mb-10 max-w-2xl mx-auto">
+                    Join thousands of satisfied clients who found their dream properties through EliteNest. 
+                    Create an account to save properties, contact agents, and manage your portfolio.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a th:href="@{/api/allsignup}" class="stripe-btn px-8 py-4 text-base bg-white text-dark hover:bg-slate-100">
+                        Create your account
+                    </a>
+                    <a th:href="@{/api/login}" class="stripe-btn-outline px-8 py-4 text-base border-white text-white hover:bg-white/10">
+                        Sign in to Dashboard
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+<footer class="bg-light pt-20 pb-10 border-t border-slate-200">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div class="md:col-span-1">
+                <a th:href="@{/}" class="flex items-center gap-2 mb-4 no-underline">
+                    <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md text-sm">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+                </a>
+                <p class="text-slate-500 text-sm leading-relaxed mb-6">
+                    The modern infrastructure for global real estate. Seamless, secure, and sophisticated.
+                </p>
+                <div class="flex gap-4">
+                    <a aria-label="Twitter" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-twitter-x"></i></a>
+                    <a aria-label="LinkedIn" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-linkedin"></i></a>
+                </div>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Platform</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="All Properties" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-grid"></i> All Properties</a></li>
+                    <li><a aria-label="Property Search" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-search"></i> Property Search</a></li>
+                    <li><a aria-label="Agent Directory" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-people"></i> Agent Directory</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Company</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="About Us" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">About Us</a></li>
+                    <li><a aria-label="Contact Support" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Contact Support</a></li>
+                    <li><a aria-label="Terms of Service" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Support</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Assistance</p></li>
+                    <li><a aria-label="Support Email" href="mailto:support@elitenest.com" class="text-primary font-bold no-underline">support@elitenest.com</a></li>
+                    <li class="pt-4"><span class="bg-indigo-50 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-indigo-100 italic">Premier Real Estate</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
+            <p>&copy; 2026 EliteNest Inc. All rights reserved.</p>
+            <p class="flex items-center gap-1"><i class="bi bi-shield-check text-emerald-500"></i> Secure & Verified Platform</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

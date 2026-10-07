@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Plans | EliteNest</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#635bff',
+                        'primary-hover': '#5851eb',
+                        dark: '#0a2540',
+                        light: '#f6f9fc',
+                        slate: {
+                            400: '#8792a2',
+                            500: '#425466',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+        body { background-color: #f6f9fc; color: #425466; overflow-x: hidden; }
+        .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+
+        .pricing-card {
+            background: #fff;
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            border-color: #cbd5e1;
+        }
+
+        .pricing-card.popular {
+            border: 2px solid #635bff;
+            box-shadow: 0 20px 25px -5px rgba(99, 91, 255, 0.1), 0 8px 10px -6px rgba(99, 91, 255, 0.05);
+        }
+
+        .pricing-card.popular:hover {
+            box-shadow: 0 25px 30px -5px rgba(99, 91, 255, 0.15), 0 10px 15px -8px rgba(99, 91, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body class="flex flex-col min-h-screen antialiased font-sans"
+      x-data="{ profileMenu: false, mobileMenu: false, scrolled: false }"
+      @scroll.window="scrolled = (window.pageYOffset > 20)">
+
+<header :class="scrolled ? 'glass-nav shadow-sm py-3' : 'bg-transparent py-5'" class="fixed top-0 w-full z-[1000] transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 flex justify-between items-center">
+        <a th:href="@{/owner/homepage}" class="flex items-center gap-2 group border-none no-underline">
+            <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md">
+                <i class="bi bi-building"></i>
+            </div>
+            <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+        </a>
+
+        <nav class="hidden lg:flex items-center gap-8 font-medium text-sm text-slate-500">
+            <a th:href="@{/api/owner/showAgent}" class="hover:text-primary transition-colors flex items-center gap-2">
+                <i class="bi bi-people"></i> Find Agent
+            </a>
+            <a th:href="@{/api/save/property}" class="hover:text-primary transition-colors flex items-center gap-2">
+                <i class="bi bi-house-add"></i> Post Property
+            </a>
+            <a th:href="@{/api/newProject}" class="hover:text-primary transition-colors flex items-center gap-2">
+                <i class="bi bi-building-add"></i> Post New Project
+            </a>
+            <a th:href="@{/api/myProperty}" class="hover:text-primary transition-colors flex items-center gap-2">
+                <i class="bi bi-grid"></i> My Properties
+            </a>
+        </nav>
+
+        <div class="flex items-center gap-4">
+            <div class="hidden md:flex relative" @click.away="profileMenu = false">
+                <button th:if="${owner != null}" @click="profileMenu = !profileMenu" class="flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none">
+                    <div class="text-right">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">Owner Portal</p>
+                        <p class="text-sm font-bold text-dark leading-none mt-1" th:text="${owner.name}">Account</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-md border border-slate-200">
+                        <i class="bi bi-person-badge text-lg"></i>
+                    </div>
+                </button>
+
+                <div x-show="profileMenu" x-cloak x-transition
+                     class="absolute top-full right-0 mt-3 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-[1100]">
+                    <div class="p-4 bg-slate-50 border-b border-slate-100">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Welcome</p>
+                        <p class="text-sm font-bold text-primary">Elite Estates</p>
+                    </div>
+                    <div class="p-2">
+                        <a th:href="@{/api/login}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 transition-colors text-sm font-medium">
+                            <i class="bi bi-shield-lock"></i> Login
+                        </a>
+                        <a th:href="@{/api/signup/role}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 transition-colors text-sm font-medium">
+                            <i class="bi bi-person-plus"></i> Sign up
+                        </a>
+                        <div class="border-t border-slate-100 mt-2 pt-2">
+                            <a th:href="@{/api/logout}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-red-50 text-red-600 transition-colors text-sm font-bold">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button aria-label="Toggle Menu" class="lg:hidden text-dark text-2xl" @click="mobileMenu = !mobileMenu">
+                <i class="bi" :class="mobileMenu ? 'bi-x' : 'bi-list'"></i>
+            </button>
+        </div>
+    </div>
+</header>
+
+<div x-show="mobileMenu" x-transition.opacity class="absolute top-full left-0 w-full bg-white shadow-xl border-t border-slate-100 flex flex-col lg:hidden py-4 px-6 gap-4 z-[1000]">
+    <div class="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Welcome to</p>
+        <p class="text-sm font-bold text-primary leading-none">Elite Estates Portal</p>
+    </div>
+
+    <a th:href="@{/}" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3 p-2">
+        <i class="bi bi-people text-lg text-primary"></i> Find Agent
+    </a>
+    <a th:href="@{/api/save/property}" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3 p-2">
+        <i class="bi bi-house-add text-lg text-primary"></i> Post Property
+    </a>
+    <a th:href="@{/api/newProject}" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3 p-2">
+        <i class="bi bi-building-add text-lg text-primary"></i> Post New Project
+    </a>
+    <a th:href="@{/api/myProperty}" class="font-medium text-slate-500 hover:text-primary flex items-center gap-3 p-2">
+        <i class="bi bi-grid text-lg text-primary"></i> My Portfolio
+    </a>
+
+    <hr class="border-slate-100 my-2">
+    <div class="grid grid-cols-2 gap-2">
+        <a th:href="@{/api/login}" class="text-xs font-bold bg-slate-50 text-dark hover:bg-slate-100 text-center py-2.5 rounded-lg transition">Login</a>
+        <a th:href="@{/api/signup/role}" class="text-xs font-bold bg-slate-50 text-dark hover:bg-slate-100 text-center py-2.5 rounded-lg transition">Sign Up</a>
+    </div>
+</div>
+
+<main class="flex-grow pt-32 pb-24">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+
+        <div class="text-center mb-16 animate-fade-in-up">
+            <span class="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 text-primary rounded-full text-[10px] font-bold uppercase tracking-widest mb-4">
+                <i class="bi bi-gem"></i> Subscription Required
+            </span>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-dark tracking-tight mb-4">
+                Choose Your <span class="text-primary italic font-serif">Owner Plan</span>
+            </h1>
+            <p class="text-slate-500 max-w-2xl mx-auto font-medium text-lg">
+                A subscription is required before posting your first property. Select a plan that fits your portfolio size.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+
+            <div class="pricing-card animate-fade-in-up" style="animation-delay: 0.1s;">
+                <h3 class="text-xl font-bold text-dark mb-2">Basic</h3>
+                <p class="text-slate-400 text-sm mb-6">For individual property owners</p>
+                <div class="mb-8">
+                    <span class="text-4xl font-extrabold text-dark tracking-tight">₹499</span>
+                    <span class="text-sm font-bold text-slate-400 ml-1">/ 1 mo</span>
+                </div>
+                <ul class="space-y-4 text-sm font-medium text-slate-600 mb-8 flex-grow">
+                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-primary"></i> 5 Property Posts</li>
+                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-primary"></i> 30 Days Validity</li>
+                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-primary"></i> Verified Listings</li>
+                    <li class="flex items-center gap-3 text-slate-400"><i class="bi bi-x-circle text-slate-300"></i> Featured Boost</li>
+                </ul>
+                <form th:action="@{/api/pay/{amount}(amount=499)}" method="post" class="mt-auto">
+                    <button type="submit" class="w-full bg-slate-100 text-dark hover:bg-slate-200 font-bold py-3.5 rounded-xl transition-colors shadow-sm">
+                        Subscribe Basic
+                    </button>
+                </form>
+            </div>
+
+            <div class="pricing-card popular animate-fade-in-up md:-translate-y-4" style="animation-delay: 0.2s;">
+                <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-md">
+                    Most Popular
+                </span>
+                <h3 class="text-xl font-bold text-primary mb-2">Silver</h3>
+                <p class="text-slate-500 text-sm mb-6">Best for growing owners</p>
+                <div class="mb-8">
+                    <span class="text-4xl font-extrabold text-primary tracking-tight">₹999</span>
+                    <span class="text-sm font-bold text-slate-400 ml-1">/ 3 mo</span>
+                </div>
+                <ul class="space-y-4 text-sm font-medium text-dark mb-8 flex-grow">
+                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-primary"></i> 15 Property Posts</li>
+                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-primary"></i> 90 Days Validity</li>
+                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-primary"></i> Featured Listings</li>
+                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-primary"></i> Priority Support</li>
+                </ul>
+                <form th:action="@{/api/pay/{amount}(amount=999)}" method="post" class="mt-auto">
+                    <button type="submit" class="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3.5 rounded-xl transition-colors shadow-md flex justify-center items-center gap-2">
+                        Subscribe Silver <i class="bi bi-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div class="pricing-card animate-fade-in-up" style="animation-delay: 0.3s;">
+                <h3 class="text-xl font-bold text-dark mb-2">Premium</h3>
+                <p class="text-slate-400 text-sm mb-6">For developers & agencies</p>
+                <div class="mb-8">
+                    <span class="text-4xl font-extrabold text-dark tracking-tight">₹1999</span>
+                    <span class="text-sm font-bold text-slate-400 ml-1">/ 1 yr</span>
+                </div>
+                <ul class="space-y-4 text-sm font-medium text-slate-600 mb-8 flex-grow">
+                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-primary"></i> 50 Property Posts</li>
+                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-primary"></i> 365 Days Validity</li>
+                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-primary"></i> Featured + Boost</li>
+                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-primary"></i> Dedicated Support</li>
+                </ul>
+                <form th:action="@{/api/pay/{amount}(amount=1999)}" method="post" class="mt-auto">
+                    <button type="submit" class="w-full bg-slate-900 text-white hover:bg-dark font-bold py-3.5 rounded-xl transition-colors shadow-sm">
+                        Subscribe Premium
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<footer class="bg-light pt-20 pb-10 border-t border-slate-200 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div class="md:col-span-1">
+                <a th:href="@{/}" class="flex items-center gap-2 mb-4 no-underline">
+                    <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md text-sm">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+                </a>
+                <p class="text-slate-500 text-sm leading-relaxed mb-6">
+                    The modern infrastructure for global real estate. Seamless, secure, and sophisticated.
+                </p>
+                <div class="flex gap-4">
+                    <a aria-label="Twitter" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-twitter-x"></i></a>
+                    <a aria-label="LinkedIn" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-linkedin"></i></a>
+                </div>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Platform</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="All Properties" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-grid"></i> All Properties</a></li>
+                    <li><a aria-label="Property Search" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-search"></i> Property Search</a></li>
+                    <li><a aria-label="Agent Directory" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-people"></i> Agent Directory</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Company</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="About Us" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">About Us</a></li>
+                    <li><a aria-label="Contact Support" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Contact Support</a></li>
+                    <li><a aria-label="Terms of Service" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-dark font-bold mb-6">Support</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Assistance</p></li>
+                    <li><a aria-label="Email Support" href="mailto:support@elitenest.com" class="text-primary font-bold no-underline">support@elitenest.com</a></li>
+                    <li class="pt-4"><span class="bg-indigo-50 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-indigo-100 italic">Premier Real Estate</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
+            <p>&copy; 2026 EliteNest Inc. All rights reserved.</p>
+            <p class="flex items-center gap-1"><i class="bi bi-shield-check text-emerald-500"></i> Secure & Verified Platform</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

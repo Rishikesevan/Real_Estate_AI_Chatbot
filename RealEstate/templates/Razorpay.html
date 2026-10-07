@@ -1,0 +1,50 @@
+<!-- Pass variables to JavaScript via data attributes -->
+<div id="payment-config"
+     th:data-order-id="${orderId}"
+     th:data-amount="${amount}"
+     th:data-key="${key}"
+     style="display: none;"></div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+  const config = document.getElementById('payment-config').dataset;
+  const orderId = config.orderId;
+  const amount = parseFloat(config.amount);
+  const razorKey = config.key;
+
+  var options = {
+      "key": razorKey,
+      "amount": amount * 100, // Amount is in paise
+      "currency": "INR",
+      "name": "EliteNest",
+      "description": "Premium Subscription Activation",
+      "image": "https://img.icons8.com/parakeet/48/building.png",
+      "order_id": orderId,
+      "handler": function (response) {
+          // Send request with background loading if needed
+          fetch("/api/saved/subscription/" + orderId + "/" + amount, {
+              method: "POST"
+          }).then(function() {
+              window.location.href = "/api/save/property";
+          }).catch(function(err) {
+              console.error("Subscription activation failed:", err);
+          });
+      },
+      "modal": {
+          "ondismiss": function () {
+              window.location.href = "/api/save/property";
+          }
+      },
+      "theme": {
+          "color": "#635bff" // Unified Stripe-style Primary Color
+      }
+  };
+
+  var rzp1 = new Razorpay(options);
+  rzp1.on('payment.failed', function (response) {
+      console.error("Payment failed:", response.error.description);
+      window.location.href = "/api/save/property";
+  });
+  rzp1.open();
+</script>

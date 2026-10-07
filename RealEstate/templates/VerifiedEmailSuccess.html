@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verified | EliteNest</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#635bff',
+                        'primary-hover': '#5851eb',
+                        dark: '#0a2540',
+                        light: '#f6f9fc',
+                        success: '#22c55e'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #f6f9fc; color: #425466; font-family: 'Inter', sans-serif; }
+        [x-cloak] { display: none !important; }
+        .premium-card { background: white; border-radius: 2.5rem; border: 1px solid #e2e8f0; box-shadow: 0 50px 100px -20px rgba(10, 37, 64, 0.05); }
+        .icon-circle { width: 80px; height: 80px; border-radius: 100%; display: flex; align-items: center; justify-content: center; margin: 0 auto; background: #f0fdf4; color: #22c55e; }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-6 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-emerald-50 via-white to-slate-50">
+
+    <div class="w-full max-w-md animate-fade-in-up">
+        <div class="text-center mb-10">
+            <a th:href="@{/}" class="inline-flex items-center gap-2 no-underline mb-8">
+                <div class="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg">
+                    <i class="bi bi-building"></i>
+                </div>
+                <span class="font-bold text-2xl text-dark tracking-tight">EliteNest</span>
+            </a>
+        </div>
+
+        <div class="premium-card p-10 md:p-14 text-center">
+            <div class="icon-circle mb-8 animate-bounce">
+                <i class="bi bi-check-circle-fill text-4xl"></i>
+            </div>
+
+            <div class="mb-10">
+                <span class="bg-emerald-50 text-success px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest mb-4 inline-block border border-emerald-100 italic">Success Verification</span>
+                <h2 class="text-3xl font-extrabold text-dark tracking-tight mb-4">Account Verified!</h2>
+                <p class="text-slate-500 font-medium leading-relaxed">
+                    Your email has been successfully verified. You now have full access to our premium real estate listings.
+                </p>
+            </div>
+
+            <a th:href="@{/api/login}" class="stripe-btn w-full !bg-success hover:scale-[1.02] shadow-emerald-200 shadow-lg no-underline block">
+                Log In Now
+            </a>
+
+            <div class="mt-8 pt-6 border-t border-slate-50">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">
+                    Welcome to the <span class="text-primary">EliteNest</span> community
+                </p>
+            </div>
+        </div>
+        
+<footer class="bg-light pt-20 pb-10 border-t border-slate-200 mt-20">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div class="md:col-span-1">
+                <a th:href="@{/}" class="flex items-center gap-2 mb-4 no-underline">
+                    <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shadow-md text-sm">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <span class="font-bold text-xl text-dark tracking-tight">EliteNest</span>
+                </a>
+                <p class="text-slate-500 text-sm leading-relaxed mb-6 text-left">
+                    The modern infrastructure for global real estate. Seamless, secure, and sophisticated.
+                </p>
+                <div class="flex gap-4">
+                    <a aria-label="Twitter" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-twitter-x"></i></a>
+                    <a aria-label="LinkedIn" href="#" class="text-slate-400 hover:text-primary transition-colors text-lg"><i class="bi bi-linkedin"></i></a>
+                </div>
+            </div>
+
+            <div class="text-left">
+                <h5 class="text-dark font-bold mb-6">Platform</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="All Properties" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-grid"></i> All Properties</a></li>
+                    <li><a aria-label="Property Search" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-search"></i> Property Search</a></li>
+                    <li><a aria-label="Agent Directory" href="#" class="hover:text-primary transition-colors no-underline text-slate-500 flex items-center gap-2"><i class="bi bi-people"></i> Agent Directory</a></li>
+                </ul>
+            </div>
+
+            <div class="text-left">
+                <h5 class="text-dark font-bold mb-6">Company</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><a aria-label="About Us" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">About Us</a></li>
+                    <li><a aria-label="Contact Support" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Contact Support</a></li>
+                    <li><a aria-label="Terms of Service" href="#" class="hover:text-primary transition-colors no-underline text-slate-500">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <div class="text-left">
+                <h5 class="text-dark font-bold mb-6">Support</h5>
+                <ul class="space-y-3 text-sm text-slate-500 list-none p-0">
+                    <li><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Assistance</p></li>
+                    <li><a aria-label="Email Support" href="mailto:support@elitenest.com" class="text-primary font-bold no-underline">support@elitenest.com</a></li>
+                    <li class="pt-4"><span class="bg-indigo-50 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-indigo-100 italic">Premier Real Estate</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
+            <p>&copy; 2026 EliteNest Inc. All rights reserved.</p>
+            <p class="flex items-center gap-1"><i class="bi bi-shield-check text-emerald-500"></i> Secure & Verified Platform</p>
+        </div>
+    </div>
+</footer>
+    </div>
+
+</body>
+</html>
